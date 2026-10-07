@@ -6,12 +6,13 @@
 /*   By: komorebi <komorebi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:31 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/07 16:15:42 by komorebi         ###   ########.fr       */
+/*   Updated: 2026/10/07 16:38:02 by komorebi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <string>
 #include <iostream>
+#include <vector>
 
 int main(int ac, char **av)
 {
@@ -22,10 +23,27 @@ int main(int ac, char **av)
     }
     for (size_t i = 1; i < ac; i++)
     {
-        if (!std::isdigit(static_cast<unsigned char>(av[i][0])))
+        for (int j = 0; av[i][j]; j++)
         {
-            std::cout << "Provide only integers" << std::endl;
+            if (!std::isdigit(static_cast<unsigned char>(av[i][j])))
+            {
+                std::cout << "Provide only integers" << std::endl;
+                return (1);
+            }
+        }
+    }
+
+    std::vector<unsigned int> input;
+    for (size_t i = 1; i < ac; i++)
+    {
+        char *end = NULL;
+
+        unsigned long value = std::strtoul(av[i], &end, 10);
+        if (value > UINT_MAX)
+        {
+            std::cout << "INT OVERFLOW YOU FOOL !!!" << std::endl;
             return (1);
         }
+        input.push_back((unsigned int)value);
     }
 }
