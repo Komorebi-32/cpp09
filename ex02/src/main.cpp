@@ -6,7 +6,7 @@
 /*   By: bkaras-g <bkaras-g@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:31 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/09 15:33:12 by bkaras-g         ###   ########.fr       */
+/*   Updated: 2026/10/09 16:16:56 by bkaras-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,14 @@ int main(int ac, char **av)
     }
     for (int i = 1; i < ac; i++)
     {
+        if (av[i][0] == '\0')
+        {
+            std::cout << "Provide only positive integers" << std::endl;
+            return (1);
+        }
         for (int j = 0; av[i][j]; j++)
         {
-            if (!std::isdigit(static_cast<unsigned char>(av[i][j])))
+            if (!std::isdigit(static_cast<unsigned char>(av[i][j])) || av[i][0] == '0')
             {
                 std::cout << "Provide only positive integers" << std::endl;
                 return (1);
