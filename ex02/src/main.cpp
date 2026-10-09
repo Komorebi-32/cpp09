@@ -6,7 +6,7 @@
 /*   By: bkaras-g <bkaras-g@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:31 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/09 15:21:40 by bkaras-g         ###   ########.fr       */
+/*   Updated: 2026/10/09 15:33:12 by bkaras-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,4 +48,11 @@ int main(int ac, char **av)
     }
 
     std::vector<std::pair<unsigned int, unsigned int> > main_chain = make_pairs(input);
+    bool has_unpaired_value;
+    unsigned int unpaired_value;
+    if (input.size() % 2 == 1)
+    {
+        has_unpaired_value = true;
+        unpaired_value = input[input.size() - 1];
+    }
 }
