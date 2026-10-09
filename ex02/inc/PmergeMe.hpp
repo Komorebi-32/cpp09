@@ -6,12 +6,13 @@
 /*   By: bkaras-g <bkaras-g@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 14:51:38 by bkaras-g          #+#    #+#             */
-/*   Updated: 2026/10/09 15:03:37 by bkaras-g         ###   ########.fr       */
+/*   Updated: 2026/10/09 15:21:40 by bkaras-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
+#include <utility>
 #include <vector>
 
 /**
@@ -24,3 +25,10 @@
  */
 void fill_input(std::vector<unsigned int> &input, char **av, int ac);
 
+/**
+ * @brief Groups adjacent input values into pairs with the larger value first.
+ * @param input Values to group into pairs.
+ * @return Vector of winner-first pairs.
+ */
+std::vector<std::pair<unsigned int, unsigned int> > make_pairs(
+	const std::vector<unsigned int> &input);
