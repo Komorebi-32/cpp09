@@ -3,47 +3,47 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: komorebi <komorebi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: bkaras-g <bkaras-g@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:31 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/07 16:38:02 by komorebi         ###   ########.fr       */
+/*   Updated: 2026/10/09 15:00:18 by bkaras-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <string>
 #include <iostream>
 #include <vector>
+#include <cctype>
+#include <stdexcept>
+#include "PmergeMe.hpp"
 
 int main(int ac, char **av)
 {
     if (ac == 1)
     {
-        std::cout << "Usage: PmergeMe [list of ints separated by spaces]" << std::endl;
+        std::cout << "Usage: PmergeMe [list of positive ints separated by spaces]" << std::endl;
         return (1);
     }
-    for (size_t i = 1; i < ac; i++)
+    for (int i = 1; i < ac; i++)
     {
         for (int j = 0; av[i][j]; j++)
         {
             if (!std::isdigit(static_cast<unsigned char>(av[i][j])))
             {
-                std::cout << "Provide only integers" << std::endl;
+                std::cout << "Provide only positive integers" << std::endl;
                 return (1);
             }
         }
     }
 
     std::vector<unsigned int> input;
-    for (size_t i = 1; i < ac; i++)
+    try
     {
-        char *end = NULL;
-
-        unsigned long value = std::strtoul(av[i], &end, 10);
-        if (value > UINT_MAX)
-        {
-            std::cout << "INT OVERFLOW YOU FOOL !!!" << std::endl;
-            return (1);
-        }
-        input.push_back((unsigned int)value);
+        fill_input(input, av, ac);
+    }
+    catch (const std::overflow_error &error)
+    {
+        std::cerr << error.what() << std::endl;
+        return (1);
     }
 }
