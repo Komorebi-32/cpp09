@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PmergeMe.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bkaras-g <bkaras-g@student.42.fr>          +#+  +:+       +#+        */
+/*   By: komorebi <komorebi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:43 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/09 17:11:45 by bkaras-g         ###   ########.fr       */
+/*   Updated: 2026/10/14 16:55:12 by komorebi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,5 +68,19 @@ void group_winners(std::vector<std::pair<unsigned int, unsigned int> > &pairs)
     }
 
     group_winners(new_pairs);
-    insert_losers(pairs, )
+    insert_losers(pairs, winners, unpaired value);
 }
+
+/*
+// void insert_losers(std::vector<std::pair<unsigned int, unsigned int> > &pairs, 
+//     std::vector<unsigned int> main_chain, unsigned_int unpaired_value)
+// {
+//  if (winner's size == 2) switch 1st and 2nd
+    for (all the pairs in pairs vector)
+    {
+        find the loser's index to insert from the Jacobsthal suite
+        identify the corresponding winner's index in the main_chain
+        insert the loser in the main_chain (binary seach until the winner's index)
+    }
+// }
+*/

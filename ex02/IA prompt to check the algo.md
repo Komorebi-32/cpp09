@@ -1,0 +1,3 @@
+IA prompt to check the algo
+
+Can you review my logic of the merge insertion algorithm that I need to implement for the ex02 of the cpp09 project of 42 Paris. Review group_winners() and the pseudo-code for insert_losers(). If my logic is correct, I am stuck on how to transmit the main_chain from one recursive step to another one. During the ascent when losers are inserted, how the step N gets the main_chain from step (N-1) 
