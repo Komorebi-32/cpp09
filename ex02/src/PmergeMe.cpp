@@ -6,7 +6,7 @@
 /*   By: komorebi <komorebi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:43 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/14 16:55:12 by komorebi         ###   ########.fr       */
+/*   Updated: 2026/10/15 13:49:24 by komorebi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,29 +47,29 @@ std::vector<std::pair<unsigned int, unsigned int> > make_pairs(
     return (main_chain);
 }
 
-void group_winners(std::vector<std::pair<unsigned int, unsigned int> > &pairs)
-{
-    if (pairs.size() == 0)
-        return ;
-    std::vector<unsigned int> winners;
+// void group_winners(std::vector<std::pair<unsigned int, unsigned int> > &pairs)
+// {
+//     if (pairs.size() == 0)
+//         return ;
+//     std::vector<unsigned int> winners;
 
-    for (size_t i = 0; i < pairs.size(); i++)
-        winners.push_back(pairs[i][0]);
+//     for (size_t i = 0; i < pairs.size(); i++)
+//         winners.push_back(pairs[i][0]);
     
-    std::vector<std::pair<unsigned int, unsigned int> > new_pairs;
-    new_pairs = make_pairs(winners);
+//     std::vector<std::pair<unsigned int, unsigned int> > new_pairs;
+//     new_pairs = make_pairs(winners);
 
-    bool has_unpaired_value;
-    unsigned int unpaired_value;
-    if (winners.size() % 2 == 1)
-    {
-        has_unpaired_value = true;
-        unpaired_value = winners[winners.size() - 1];
-    }
+//     bool has_unpaired_value;
+//     unsigned int unpaired_value;
+//     if (winners.size() % 2 == 1)
+//     {
+//         has_unpaired_value = true;
+//         unpaired_value = winners[winners.size() - 1];
+//     }
 
-    group_winners(new_pairs);
-    insert_losers(pairs, winners, unpaired value);
-}
+//     group_winners(new_pairs);
+//     insert_losers(pairs, winners, unpaired value);
+// }
 
 /*
 // void insert_losers(std::vector<std::pair<unsigned int, unsigned int> > &pairs, 
@@ -84,3 +84,27 @@ void group_winners(std::vector<std::pair<unsigned int, unsigned int> > &pairs)
     }
 // }
 */
+
+std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
+{
+    if (values.size() <= 1)
+        return values;
+    
+    std::vector<std::pair<unsigned int, unsigned int> > pairs;
+    pairs = make_pairs(values);
+
+    std::vector<unsigned int> winners;
+    for (size_t i = 0; i < pairs.size(); i++)
+        winners.push_back(pairs[i][0]);
+    
+    bool has_unpaired_value;
+    unsigned int unpaired_value;
+    if (winners.size() % 2 == 1)
+    {
+        has_unpaired_value = true;
+        unpaired_value = winners[winners.size() - 1];
+    }
+    else
+        has_unpaired_value = false;
+    
+}
