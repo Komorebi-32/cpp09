@@ -6,7 +6,7 @@
 /*   By: komorebi <komorebi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:43 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/15 17:46:46 by komorebi         ###   ########.fr       */
+/*   Updated: 2026/10/15 18:26:27 by komorebi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,6 +112,8 @@ std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
     
     winners = merge_insert_sort(winners); // [8, 10, 12]
 
+    //keep track of the losers and their association to the winners
+    //filling losers vector so that losers[i] is the loser of winners[i]
     std::vector<unsigned int> losers;
     for (size_t j = 0; j < winners.size(); j++)
     {
@@ -125,13 +127,12 @@ std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
         }
     }
     
+    //include b1 at the beginning of the chain, since it's the loser of a1 
+    //that is at the beginning of the chain
+    winners.insert(winners.begin(), losers[0]);
 }
 
 /*
-restore each winner's association with its loser
-    align/relabel the pairs in sorted_winners order
-
-    chain = sorted_winners, with b1 included in the initial chain
 
     for each Jacobsthal batch endpoint t = 3, 5, 11, 21, ...:
         visit pair indices from t down to the previous endpoint + 1:
