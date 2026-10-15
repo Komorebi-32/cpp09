@@ -6,7 +6,7 @@
 /*   By: komorebi <komorebi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:43 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/15 13:49:24 by komorebi         ###   ########.fr       */
+/*   Updated: 2026/10/15 17:46:46 by komorebi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,21 +90,56 @@ std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
     if (values.size() <= 1)
         return values;
     
-    std::vector<std::pair<unsigned int, unsigned int> > pairs;
+    //pair adjacent values as (winner a_i, loser b_i)
+    std::vector<std::pair<unsigned int, unsigned int> > pairs; // (12, 3)  (10, 2)  (8, 1)
     pairs = make_pairs(values);
 
+    //keep winners
     std::vector<unsigned int> winners;
     for (size_t i = 0; i < pairs.size(); i++)
-        winners.push_back(pairs[i][0]);
+        winners.push_back(pairs[i].first);
     
+    //keep unpaired value
     bool has_unpaired_value;
     unsigned int unpaired_value;
-    if (winners.size() % 2 == 1)
+    if (values.size() % 2 == 1)
     {
         has_unpaired_value = true;
-        unpaired_value = winners[winners.size() - 1];
+        unpaired_value = values[values.size() - 1];
     }
     else
         has_unpaired_value = false;
     
+    winners = merge_insert_sort(winners); // [8, 10, 12]
+
+    std::vector<unsigned int> losers;
+    for (size_t j = 0; j < winners.size(); j++)
+    {
+        for (size_t i = 0; i < pairs.size(); i++)
+        {
+            if (winners[j] == pairs[i].first)
+            {
+                losers.push_back(pairs[i].second);
+                break;
+            }
+        }
+    }
+    
 }
+
+/*
+restore each winner's association with its loser
+    align/relabel the pairs in sorted_winners order
+
+    chain = sorted_winners, with b1 included in the initial chain
+
+    for each Jacobsthal batch endpoint t = 3, 5, 11, 21, ...:
+        visit pair indices from t down to the previous endpoint + 1:
+            skip indices beyond the number of pairs
+            binary-insert b_i into the chain, respecting its paired a_i
+
+    if a straggler exists:
+        binary-insert it into the chain
+
+    return chain
+*/
