@@ -6,7 +6,7 @@
 /*   By: bkaras-g <bkaras-g@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:43 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/16 11:28:35 by bkaras-g         ###   ########.fr       */
+/*   Updated: 2026/10/16 12:05:10 by bkaras-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,23 @@ std::vector<std::pair<unsigned int, unsigned int> > make_pairs(
 			main_chain.push_back(std::make_pair(input[i + 1], input[i]));
     }
     return (main_chain);
+}
+
+static void binary_insert(std::vector<unsigned int> &chain,
+	unsigned int value, size_t search_end)
+{
+	size_t left = 0;
+	size_t right = search_end;
+
+	while (left < right)
+	{
+		size_t mid = left + (right - left) / 2;
+		if (chain[mid] < value)
+			left = mid + 1;
+		else
+			right = mid;
+	}
+	chain.insert(chain.begin() + left, value);
 }
 
 // void group_winners(std::vector<std::pair<unsigned int, unsigned int> > &pairs)
@@ -131,11 +148,15 @@ std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
     //that is at the beginning of the chain
     winners.insert(winners.begin(), losers[0]);
 
+    //insert losers following the Jacobsthal suite order
+    int endpoint = 3;
     int previous_endpoint = 1;
-    for (int k = 2; k <= pairs.size(); k = (2^(k + 1) + (-1)^k) / 3)
+    for (int k = 2; endpoint <= pairs.size(); k++) //stop condition problem: endpoint can be larger than pairs.size() 
+    // and there still can be some losers to insert
     {
-        for (int idx = k; idx > previous_endpoint; idx--)
+        for (int idx = endpoint; idx > previous_endpoint; idx--)
         {
+            // skip the Jacobsthal indices that are beyond the number of pairs
             while (idx > pairs.size())
                 idx--;
             unsigned int pairWinner = 0;
@@ -156,24 +177,14 @@ std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
                     break;
                 }
             }
-            int left = 0;
-            int right = static_cast<int>(pairWinnerPos);
-            int pos = idx + 1;
-
-            while (left <= right)
-            {
-                int mid = left + (right - left) / 2;
-                if (winners[mid] < losers[idx])
-                    left = mid + 1;
-                else
-                {
-                    pos = mid;
-                    right = mid - 1;    
-                }
-            }
-            winners.insert(winners.begin() + left, losers[idx]);
+            binary_insert(winners, losers[idx], pairWinnerPos);
         }
+        previous_endpoint = endpoint;
+        endpoint = (2^(k + 1) + (-1)^k) / 3;
     }
+    if (has_unpaired_value)
+        binary_insert(winners, unpaired_value, winners.size());
+    return winners;
 }
 
 /*
