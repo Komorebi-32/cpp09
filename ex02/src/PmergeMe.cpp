@@ -6,7 +6,7 @@
 /*   By: bkaras-g <bkaras-g@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:43 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/16 12:05:10 by bkaras-g         ###   ########.fr       */
+/*   Updated: 2026/10/16 14:01:54 by bkaras-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,44 +64,6 @@ static void binary_insert(std::vector<unsigned int> &chain,
 	chain.insert(chain.begin() + left, value);
 }
 
-// void group_winners(std::vector<std::pair<unsigned int, unsigned int> > &pairs)
-// {
-//     if (pairs.size() == 0)
-//         return ;
-//     std::vector<unsigned int> winners;
-
-//     for (size_t i = 0; i < pairs.size(); i++)
-//         winners.push_back(pairs[i][0]);
-    
-//     std::vector<std::pair<unsigned int, unsigned int> > new_pairs;
-//     new_pairs = make_pairs(winners);
-
-//     bool has_unpaired_value;
-//     unsigned int unpaired_value;
-//     if (winners.size() % 2 == 1)
-//     {
-//         has_unpaired_value = true;
-//         unpaired_value = winners[winners.size() - 1];
-//     }
-
-//     group_winners(new_pairs);
-//     insert_losers(pairs, winners, unpaired value);
-// }
-
-/*
-// void insert_losers(std::vector<std::pair<unsigned int, unsigned int> > &pairs, 
-//     std::vector<unsigned int> main_chain, unsigned_int unpaired_value)
-// {
-//  if (winner's size == 2) switch 1st and 2nd
-    for (all the pairs in pairs vector)
-    {
-        find the loser's index to insert from the Jacobsthal suite
-        identify the corresponding winner's index in the main_chain
-        insert the loser in the main_chain (binary seach until the winner's index)
-    }
-// }
-*/
-
 std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
 {
     if (values.size() <= 1)
@@ -151,14 +113,16 @@ std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
     //insert losers following the Jacobsthal suite order
     int endpoint = 3;
     int previous_endpoint = 1;
-    for (int k = 2; endpoint <= pairs.size(); k++) //stop condition problem: endpoint can be larger than pairs.size() 
-    // and there still can be some losers to insert
+    for (int k = 2; previous_endpoint <= pairs.size(); k++) // k-th batch of insertion (see page 7 pdf Merge)
     {
         for (int idx = endpoint; idx > previous_endpoint; idx--)
         {
             // skip the Jacobsthal indices that are beyond the number of pairs
             while (idx > pairs.size())
                 idx--;
+
+            // determine the position of the winner paired to the loser we want to insert
+            // so that we insert the loser with binary search until the paired winner's index
             unsigned int pairWinner = 0;
             for (size_t pairIndex = 0; pairIndex < pairs.size(); pairIndex++)
             {
@@ -179,23 +143,14 @@ std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
             }
             binary_insert(winners, losers[idx], pairWinnerPos);
         }
+        //update boundaries for the next batch
         previous_endpoint = endpoint;
-        endpoint = (2^(k + 1) + (-1)^k) / 3;
+        endpoint = (2^(k + 1) + (-1)^k) / 3; //endpoint == t_k (page 7 pdf Merge)
     }
+
+    //insert the unpaired value if it exists (straggler)
     if (has_unpaired_value)
         binary_insert(winners, unpaired_value, winners.size());
+
     return winners;
 }
-
-/*
-
-    for each Jacobsthal batch endpoint t = 3, 5, 11, 21, ...:
-        visit pair indices from t down to the previous endpoint + 1:
-            skip indices beyond the number of pairs
-            binary-insert b_i into the chain, respecting its paired a_i
-
-    if a straggler exists:
-        binary-insert it into the chain
-
-    return chain
-*/
