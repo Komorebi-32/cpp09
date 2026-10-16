@@ -6,7 +6,7 @@
 /*   By: bkaras-g <bkaras-g@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:43 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/16 14:01:54 by bkaras-g         ###   ########.fr       */
+/*   Updated: 2026/10/16 15:19:30 by bkaras-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <utility>
+#include <algorithm>
 
 void fill_input(std::vector<unsigned int> &input, char **av, int ac)
 {
@@ -111,16 +112,15 @@ std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
     winners.insert(winners.begin(), losers[0]);
 
     //insert losers following the Jacobsthal suite order
-    int endpoint = 3;
-    int previous_endpoint = 1;
-    for (int k = 2; previous_endpoint <= pairs.size(); k++) // k-th batch of insertion (see page 7 pdf Merge)
+    size_t endpoint = 3;
+    size_t previous_endpoint = 1;
+    for (size_t k = 2; previous_endpoint < pairs.size(); k++) // k-th batch of insertion (see page 7 pdf Merge)
     {
-        for (int idx = endpoint; idx > previous_endpoint; idx--)
+        // idx = std::min(endpoint, pairs.size()) - 1 
+        // min of the two if the endpoint exceeds the number of pairs
+        // -1 because the pairs in the Ford Johnson algo are one-based, so -1 to align the C++ index that is 0-based
+        for (size_t idx = std::min(endpoint, pairs.size()) - 1 ; idx >= previous_endpoint; idx--)
         {
-            // skip the Jacobsthal indices that are beyond the number of pairs
-            while (idx > pairs.size())
-                idx--;
-
             // determine the position of the winner paired to the loser we want to insert
             // so that we insert the loser with binary search until the paired winner's index
             unsigned int pairWinner = 0;
@@ -144,8 +144,9 @@ std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
             binary_insert(winners, losers[idx], pairWinnerPos);
         }
         //update boundaries for the next batch
+        size_t next_endpoint = endpoint + 2 * previous_endpoint;
         previous_endpoint = endpoint;
-        endpoint = (2^(k + 1) + (-1)^k) / 3; //endpoint == t_k (page 7 pdf Merge)
+        endpoint = next_endpoint;
     }
 
     //insert the unpaired value if it exists (straggler)
