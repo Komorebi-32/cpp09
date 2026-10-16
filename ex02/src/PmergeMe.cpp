@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PmergeMe.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: komorebi <komorebi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: bkaras-g <bkaras-g@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:43 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/15 18:26:27 by komorebi         ###   ########.fr       */
+/*   Updated: 2026/10/16 11:28:35 by bkaras-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,6 +130,50 @@ std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
     //include b1 at the beginning of the chain, since it's the loser of a1 
     //that is at the beginning of the chain
     winners.insert(winners.begin(), losers[0]);
+
+    int previous_endpoint = 1;
+    for (int k = 2; k <= pairs.size(); k = (2^(k + 1) + (-1)^k) / 3)
+    {
+        for (int idx = k; idx > previous_endpoint; idx--)
+        {
+            while (idx > pairs.size())
+                idx--;
+            unsigned int pairWinner = 0;
+            for (size_t pairIndex = 0; pairIndex < pairs.size(); pairIndex++)
+            {
+                if (pairs[pairIndex].second == losers[idx])
+                {
+                    pairWinner = pairs[pairIndex].first;
+                    break;
+                }
+            }
+            size_t pairWinnerPos = 0;
+            for (size_t winnerIndex = 0; winnerIndex < winners.size(); winnerIndex++)
+            {
+                if (winners[winnerIndex] == pairWinner)
+                {
+                    pairWinnerPos = winnerIndex;
+                    break;
+                }
+            }
+            int left = 0;
+            int right = static_cast<int>(pairWinnerPos);
+            int pos = idx + 1;
+
+            while (left <= right)
+            {
+                int mid = left + (right - left) / 2;
+                if (winners[mid] < losers[idx])
+                    left = mid + 1;
+                else
+                {
+                    pos = mid;
+                    right = mid - 1;    
+                }
+            }
+            winners.insert(winners.begin() + left, losers[idx]);
+        }
+    }
 }
 
 /*
