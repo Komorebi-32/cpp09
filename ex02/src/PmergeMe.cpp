@@ -6,7 +6,7 @@
 /*   By: bkaras-g <bkaras-g@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:43 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/16 15:19:30 by bkaras-g         ###   ########.fr       */
+/*   Updated: 2026/10/16 16:09:03 by bkaras-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 #include <cerrno>
 #include <climits>
 #include <cstdlib>
+#include <iomanip>
+#include <iostream>
 #include <stdexcept>
 #include <utility>
 #include <algorithm>
@@ -33,8 +35,9 @@ void fill_input(std::vector<unsigned int> &input, char **av, int ac)
 	}
 }
 
-std::vector<std::pair<unsigned int, unsigned int> > make_pairs(
-	const std::vector<unsigned int> &input)
+template <typename Container>
+static std::vector<std::pair<unsigned int, unsigned int> > make_pairs_impl(
+	const Container &input)
 {
 	std::vector<std::pair<unsigned int, unsigned int> > main_chain;
 
@@ -48,7 +51,14 @@ std::vector<std::pair<unsigned int, unsigned int> > make_pairs(
     return (main_chain);
 }
 
-static void binary_insert(std::vector<unsigned int> &chain,
+std::vector<std::pair<unsigned int, unsigned int> > make_pairs(
+	const std::vector<unsigned int> &input)
+{
+	return make_pairs_impl(input);
+}
+
+template <typename Container>
+static void binary_insert(Container &chain,
 	unsigned int value, size_t search_end)
 {
 	size_t left = 0;
@@ -65,17 +75,18 @@ static void binary_insert(std::vector<unsigned int> &chain,
 	chain.insert(chain.begin() + left, value);
 }
 
-std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
+template <typename Container>
+static Container merge_insert_sort_impl(Container &values)
 {
     if (values.size() <= 1)
         return values;
     
     //pair adjacent values as (winner a_i, loser b_i)
     std::vector<std::pair<unsigned int, unsigned int> > pairs; // (12, 3)  (10, 2)  (8, 1)
-    pairs = make_pairs(values);
+    pairs = make_pairs_impl(values);
 
     //keep winners
-    std::vector<unsigned int> winners;
+    Container winners;
     for (size_t i = 0; i < pairs.size(); i++)
         winners.push_back(pairs[i].first);
     
@@ -90,10 +101,9 @@ std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
     else
         has_unpaired_value = false;
     
-    winners = merge_insert_sort(winners); // [8, 10, 12]
+    winners = merge_insert_sort_impl(winners);
 
-    //keep track of the losers and their association to the winners
-    //filling losers vector so that losers[i] is the loser of winners[i]
+    //keep track of the losers in the same order as their sorted winners
     std::vector<unsigned int> losers;
     for (size_t j = 0; j < winners.size(); j++)
     {
@@ -109,18 +119,20 @@ std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
     
     //include b1 at the beginning of the chain, since it's the loser of a1 
     //that is at the beginning of the chain
-    winners.insert(winners.begin(), losers[0]);
+    if (!losers.empty())
+        winners.insert(winners.begin(), losers[0]);
 
     //insert losers following the Jacobsthal suite order
     size_t endpoint = 3;
     size_t previous_endpoint = 1;
-    for (size_t k = 2; previous_endpoint < pairs.size(); k++) // k-th batch of insertion (see page 7 pdf Merge)
+    while (previous_endpoint < pairs.size())
     {
-        // idx = std::min(endpoint, pairs.size()) - 1 
-        // min of the two if the endpoint exceeds the number of pairs
-        // -1 because the pairs in the Ford Johnson algo are one-based, so -1 to align the C++ index that is 0-based
-        for (size_t idx = std::min(endpoint, pairs.size()) - 1 ; idx >= previous_endpoint; idx--)
+        size_t batch_end = std::min(endpoint, pairs.size());
+        for (size_t idx = batch_end; idx > previous_endpoint; )
         {
+            --idx; // decrementing to switch from Ford-Johnson pairs that are 1-based
+            // to 0-based C++ style
+             
             // determine the position of the winner paired to the loser we want to insert
             // so that we insert the loser with binary search until the paired winner's index
             unsigned int pairWinner = 0;
@@ -154,4 +166,41 @@ std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
         binary_insert(winners, unpaired_value, winners.size());
 
     return winners;
+}
+
+std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
+{
+    return merge_insert_sort_impl(values);
+}
+
+std::deque<unsigned int> merge_insert_sort(std::deque<unsigned int> &values)
+{
+    return merge_insert_sort_impl(values);
+}
+
+template <typename Container>
+static void print_sequence(const Container &values)
+{
+    for (size_t i = 0; i < values.size(); ++i)
+    {
+        if (i != 0)
+            std::cout << ' ';
+        std::cout << values[i];
+    }
+}
+
+void print_results(const std::vector<unsigned int> &input,
+    const std::vector<unsigned int> &vector_sorted, double vector_time_us,
+    double deque_time_us)
+{
+    std::cout << "Before: ";
+    print_sequence(input);
+    std::cout << '\n' << "After: ";
+    print_sequence(vector_sorted);
+    std::cout << '\n'
+        << "Time to process a range of " << input.size()
+        << " elements with std::vector: " << std::fixed
+        << std::setprecision(3) << vector_time_us << " us\n";
+    std::cout << "Time to process a range of " << input.size()
+        << " elements with std::deque: " << deque_time_us << " us\n";
 }
