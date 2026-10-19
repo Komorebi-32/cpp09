@@ -105,22 +105,22 @@ static void keep_winners_and_straggler(
 
 /**
  * @brief Keeps losers in the order of their sorted winners.
- * @param winners Sorted pair winners.
+ * @param main_chain Sorted pair winners.
  * @param pairs Winner-first pairs from the input values.
  * @return Losers ordered to match the sorted winners.
  */
 template <typename Container>
 static std::vector<unsigned int> keep_losers(
-	const Container &winners,
+	const Container &main_chain,
 	const std::vector<std::pair<unsigned int, unsigned int> > &pairs)
 {
 	std::vector<unsigned int> losers;
 
-	for (size_t j = 0; j < winners.size(); j++)
+	for (size_t j = 0; j < main_chain.size(); j++)
 	{
 		for (size_t i = 0; i < pairs.size(); i++)
 		{
-			if (winners[j] == pairs[i].first)
+			if (main_chain[j] == pairs[i].first)
 			{
 				losers.push_back(pairs[i].second);
 				break;
@@ -133,13 +133,13 @@ static std::vector<unsigned int> keep_losers(
 /**
  * @brief Finds the position of the winner paired with a loser.
  * @param loser Loser whose paired winner position is needed.
- * @param winners Sorted main chain.
+ * @param main_chain Sorted main chain.
  * @param pairs Winner-first pairs from the input values.
  * @return Position of the paired winner in the main chain.
  */
 template <typename Container>
 static size_t find_pair_winner_pos(
-	unsigned int loser, const Container &winners,
+	unsigned int loser, const Container &main_chain,
 	const std::vector<std::pair<unsigned int, unsigned int> > &pairs)
 {
 	unsigned int pairWinner = 0;
@@ -152,9 +152,9 @@ static size_t find_pair_winner_pos(
 		}
 	}
 	size_t pairWinnerPos = 0;
-	for (size_t winnerIndex = 0; winnerIndex < winners.size(); winnerIndex++)
+	for (size_t winnerIndex = 0; winnerIndex < main_chain.size(); winnerIndex++)
 	{
-		if (winners[winnerIndex] == pairWinner)
+		if (main_chain[winnerIndex] == pairWinner)
 		{
 			pairWinnerPos = winnerIndex;
 			break;
@@ -165,14 +165,14 @@ static size_t find_pair_winner_pos(
 
 /**
  * @brief Inserts losers into the main chain in Jacobsthal sequence order.
- * @param winners Main chain receiving the losers.
+ * @param main_chain Main chain receiving the losers.
  * @param losers Losers ordered to match the sorted winners.
  * @param pairs Winner-first pairs from the input values.
  * @return Nothing.
  */
 template <typename Container>
 static void insert_losers(
-	Container &winners, const std::vector<unsigned int> &losers,
+	Container &main_chain, const std::vector<unsigned int> &losers,
 	const std::vector<std::pair<unsigned int, unsigned int> > &pairs)
 {
 	size_t endpoint = 3;
@@ -188,8 +188,8 @@ static void insert_losers(
 			// determine the position of the winner paired to the loser we want to insert
 			// so that we insert the loser with binary search until the paired winner's index
 			size_t pairWinnerPos = find_pair_winner_pos(
-				losers[idx], winners, pairs);
-			binary_insert(winners, losers[idx], pairWinnerPos);
+				losers[idx], main_chain, pairs);
+			binary_insert(main_chain, losers[idx], pairWinnerPos);
 		}
 		//update boundaries for the next batch
 		size_t next_endpoint = endpoint + 2 * previous_endpoint;
@@ -210,30 +210,30 @@ static Container merge_insert_sort_impl(Container &values)
     pairs = make_pairs_impl(values);
 
     //keep winners and unpaired value
-    Container winners;
+    Container main_chain;
     bool has_unpaired_value = false;
     unsigned int unpaired_value = 0;
     keep_winners_and_straggler(
-        values, pairs, winners, has_unpaired_value, unpaired_value);
+        values, pairs, main_chain, has_unpaired_value, unpaired_value);
     
-    winners = merge_insert_sort_impl(winners);
+    main_chain = merge_insert_sort_impl(main_chain);
 
     //keep track of the losers in the same order as their sorted winners
-    std::vector<unsigned int> losers = keep_losers(winners, pairs);
+    std::vector<unsigned int> losers = keep_losers(main_chain, pairs);
     
     //include b1 at the beginning of the chain, since it's the loser of a1 
     //that is at the beginning of the chain
     if (!losers.empty())
-        winners.insert(winners.begin(), losers[0]);
+        main_chain.insert(main_chain.begin(), losers[0]);
 
     //insert losers following the Jacobsthal suite order
-    insert_losers(winners, losers, pairs);
+    insert_losers(main_chain, losers, pairs);
 
     //insert the unpaired value if it exists (straggler)
     if (has_unpaired_value)
-        binary_insert(winners, unpaired_value, winners.size());
+        binary_insert(main_chain, unpaired_value, main_chain.size());
 
-    return winners;
+    return main_chain;
 }
 
 std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
