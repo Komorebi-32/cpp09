@@ -21,6 +21,23 @@
 #include <utility>
 #include <algorithm>
 
+template <typename Container>
+struct matching_containers;
+
+template <>
+struct matching_containers<std::vector<unsigned int> >
+{
+	typedef std::vector<unsigned int> values_type;
+	typedef std::vector<std::pair<unsigned int, unsigned int> > pairs_type;
+};
+
+template <>
+struct matching_containers<std::deque<unsigned int> >
+{
+	typedef std::deque<unsigned int> values_type;
+	typedef std::deque<std::pair<unsigned int, unsigned int> > pairs_type;
+};
+
 void fill_input(std::vector<unsigned int> &input, char **av, int ac)
 {
 	for (int i = 1; i < ac; i++)
@@ -36,10 +53,10 @@ void fill_input(std::vector<unsigned int> &input, char **av, int ac)
 }
 
 template <typename Container>
-static std::vector<std::pair<unsigned int, unsigned int> > make_pairs_impl(
+static typename matching_containers<Container>::pairs_type make_pairs_impl(
 	const Container &input, size_t &comparison_count)
 {
-	std::vector<std::pair<unsigned int, unsigned int> > main_chain;
+	typename matching_containers<Container>::pairs_type main_chain;
 
 	for (size_t i = 0; i + 1 < input.size(); i += 2)
     {
@@ -90,7 +107,7 @@ static void binary_insert(Container &chain,
 template <typename Container>
 static void keep_winners_and_straggler(
 	const Container &values,
-	const std::vector<std::pair<unsigned int, unsigned int> > &pairs,
+	const typename matching_containers<Container>::pairs_type &pairs,
 	Container &winners, bool &has_unpaired_value,
 	unsigned int &unpaired_value)
 {
@@ -113,11 +130,11 @@ static void keep_winners_and_straggler(
  * @return Losers ordered to match the sorted winners.
  */
 template <typename Container>
-static std::vector<unsigned int> keep_losers(
+static typename matching_containers<Container>::values_type keep_losers(
 	const Container &main_chain,
-	const std::vector<std::pair<unsigned int, unsigned int> > &pairs)
+	const typename matching_containers<Container>::pairs_type &pairs)
 {
-	std::vector<unsigned int> losers;
+	typename matching_containers<Container>::values_type losers;
 
 	for (size_t j = 0; j < main_chain.size(); j++)
 	{
@@ -143,7 +160,7 @@ static std::vector<unsigned int> keep_losers(
 template <typename Container>
 static size_t find_pair_winner_pos(
 	unsigned int loser, const Container &main_chain,
-	const std::vector<std::pair<unsigned int, unsigned int> > &pairs)
+	const typename matching_containers<Container>::pairs_type &pairs)
 {
 	unsigned int pairWinner = 0;
 	for (size_t pairIndex = 0; pairIndex < pairs.size(); pairIndex++)
@@ -175,8 +192,9 @@ static size_t find_pair_winner_pos(
  */
 template <typename Container>
 static void insert_losers(
-	Container &main_chain, const std::vector<unsigned int> &losers,
-	const std::vector<std::pair<unsigned int, unsigned int> > &pairs,
+	Container &main_chain,
+	const typename matching_containers<Container>::values_type &losers,
+	const typename matching_containers<Container>::pairs_type &pairs,
 	size_t &comparison_count)
 {
 	size_t endpoint = 3;
@@ -212,7 +230,7 @@ static Container merge_insert_sort_impl(
         return values;
     
     //pair adjacent values as (winner a_i, loser b_i)
-    std::vector<std::pair<unsigned int, unsigned int> > pairs; // (12, 3)  (10, 2)  (8, 1)
+    typename matching_containers<Container>::pairs_type pairs;
     pairs = make_pairs_impl(values, comparison_count);
 
     //keep winners and unpaired value
@@ -225,7 +243,8 @@ static Container merge_insert_sort_impl(
     main_chain = merge_insert_sort_impl(main_chain, comparison_count);
 
     //keep track of the losers in the same order as their sorted winners
-    std::vector<unsigned int> losers = keep_losers(main_chain, pairs);
+    typename matching_containers<Container>::values_type losers =
+        keep_losers(main_chain, pairs);
     
     //include b1 at the beginning of the chain, since it's the loser of a1 
     //that is at the beginning of the chain
