@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PmergeMe.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bkaras-g <bkaras-g@student.42.fr>          +#+  +:+       +#+        */
+/*   By: komorebi <komorebi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:43 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/16 16:09:03 by bkaras-g         ###   ########.fr       */
+/*   Updated: 2026/10/19 12:14:59 by komorebi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,9 +75,133 @@ static void binary_insert(Container &chain,
 	chain.insert(chain.begin() + left, value);
 }
 
+/**
+ * @brief Keeps the pair winners and any unpaired input value.
+ * @param values Input values being sorted.
+ * @param pairs Winner-first pairs from the input values.
+ * @param winners Container that receives the pair winners.
+ * @param has_unpaired_value Set to true when the input has an unpaired value.
+ * @param unpaired_value Receives the unpaired input value when present.
+ * @return Nothing.
+ */
+template <typename Container>
+static void keep_winners_and_straggler(
+	const Container &values,
+	const std::vector<std::pair<unsigned int, unsigned int> > &pairs,
+	Container &winners, bool &has_unpaired_value,
+	unsigned int &unpaired_value)
+{
+	for (size_t i = 0; i < pairs.size(); i++)
+		winners.push_back(pairs[i].first);
+
+	if (values.size() % 2 == 1)
+	{
+		has_unpaired_value = true;
+		unpaired_value = values[values.size() - 1];
+	}
+	else
+		has_unpaired_value = false;
+}
+
+/**
+ * @brief Keeps losers in the order of their sorted winners.
+ * @param winners Sorted pair winners.
+ * @param pairs Winner-first pairs from the input values.
+ * @return Losers ordered to match the sorted winners.
+ */
+template <typename Container>
+static std::vector<unsigned int> keep_losers(
+	const Container &winners,
+	const std::vector<std::pair<unsigned int, unsigned int> > &pairs)
+{
+	std::vector<unsigned int> losers;
+
+	for (size_t j = 0; j < winners.size(); j++)
+	{
+		for (size_t i = 0; i < pairs.size(); i++)
+		{
+			if (winners[j] == pairs[i].first)
+			{
+				losers.push_back(pairs[i].second);
+				break;
+			}
+		}
+	}
+	return losers;
+}
+
+/**
+ * @brief Finds the position of the winner paired with a loser.
+ * @param loser Loser whose paired winner position is needed.
+ * @param winners Sorted main chain.
+ * @param pairs Winner-first pairs from the input values.
+ * @return Position of the paired winner in the main chain.
+ */
+template <typename Container>
+static size_t find_pair_winner_pos(
+	unsigned int loser, const Container &winners,
+	const std::vector<std::pair<unsigned int, unsigned int> > &pairs)
+{
+	unsigned int pairWinner = 0;
+	for (size_t pairIndex = 0; pairIndex < pairs.size(); pairIndex++)
+	{
+		if (pairs[pairIndex].second == loser)
+		{
+			pairWinner = pairs[pairIndex].first;
+			break;
+		}
+	}
+	size_t pairWinnerPos = 0;
+	for (size_t winnerIndex = 0; winnerIndex < winners.size(); winnerIndex++)
+	{
+		if (winners[winnerIndex] == pairWinner)
+		{
+			pairWinnerPos = winnerIndex;
+			break;
+		}
+	}
+	return pairWinnerPos;
+}
+
+/**
+ * @brief Inserts losers into the main chain in Jacobsthal sequence order.
+ * @param winners Main chain receiving the losers.
+ * @param losers Losers ordered to match the sorted winners.
+ * @param pairs Winner-first pairs from the input values.
+ * @return Nothing.
+ */
+template <typename Container>
+static void insert_losers(
+	Container &winners, const std::vector<unsigned int> &losers,
+	const std::vector<std::pair<unsigned int, unsigned int> > &pairs)
+{
+	size_t endpoint = 3;
+	size_t previous_endpoint = 1;
+	while (previous_endpoint < pairs.size())
+	{
+		size_t batch_end = std::min(endpoint, pairs.size());
+		for (size_t idx = batch_end; idx > previous_endpoint; )
+		{
+			--idx; // decrementing to switch from Ford-Johnson pairs that are 1-based
+			// to 0-based C++ style
+
+			// determine the position of the winner paired to the loser we want to insert
+			// so that we insert the loser with binary search until the paired winner's index
+			size_t pairWinnerPos = find_pair_winner_pos(
+				losers[idx], winners, pairs);
+			binary_insert(winners, losers[idx], pairWinnerPos);
+		}
+		//update boundaries for the next batch
+		size_t next_endpoint = endpoint + 2 * previous_endpoint;
+		previous_endpoint = endpoint;
+		endpoint = next_endpoint;
+	}
+}
+
 template <typename Container>
 static Container merge_insert_sort_impl(Container &values)
 {
+    //stop condition : values is already sorted if size <= 1
     if (values.size() <= 1)
         return values;
     
@@ -85,37 +209,17 @@ static Container merge_insert_sort_impl(Container &values)
     std::vector<std::pair<unsigned int, unsigned int> > pairs; // (12, 3)  (10, 2)  (8, 1)
     pairs = make_pairs_impl(values);
 
-    //keep winners
+    //keep winners and unpaired value
     Container winners;
-    for (size_t i = 0; i < pairs.size(); i++)
-        winners.push_back(pairs[i].first);
-    
-    //keep unpaired value
-    bool has_unpaired_value;
-    unsigned int unpaired_value;
-    if (values.size() % 2 == 1)
-    {
-        has_unpaired_value = true;
-        unpaired_value = values[values.size() - 1];
-    }
-    else
-        has_unpaired_value = false;
+    bool has_unpaired_value = false;
+    unsigned int unpaired_value = 0;
+    keep_winners_and_straggler(
+        values, pairs, winners, has_unpaired_value, unpaired_value);
     
     winners = merge_insert_sort_impl(winners);
 
     //keep track of the losers in the same order as their sorted winners
-    std::vector<unsigned int> losers;
-    for (size_t j = 0; j < winners.size(); j++)
-    {
-        for (size_t i = 0; i < pairs.size(); i++)
-        {
-            if (winners[j] == pairs[i].first)
-            {
-                losers.push_back(pairs[i].second);
-                break;
-            }
-        }
-    }
+    std::vector<unsigned int> losers = keep_losers(winners, pairs);
     
     //include b1 at the beginning of the chain, since it's the loser of a1 
     //that is at the beginning of the chain
@@ -123,43 +227,7 @@ static Container merge_insert_sort_impl(Container &values)
         winners.insert(winners.begin(), losers[0]);
 
     //insert losers following the Jacobsthal suite order
-    size_t endpoint = 3;
-    size_t previous_endpoint = 1;
-    while (previous_endpoint < pairs.size())
-    {
-        size_t batch_end = std::min(endpoint, pairs.size());
-        for (size_t idx = batch_end; idx > previous_endpoint; )
-        {
-            --idx; // decrementing to switch from Ford-Johnson pairs that are 1-based
-            // to 0-based C++ style
-             
-            // determine the position of the winner paired to the loser we want to insert
-            // so that we insert the loser with binary search until the paired winner's index
-            unsigned int pairWinner = 0;
-            for (size_t pairIndex = 0; pairIndex < pairs.size(); pairIndex++)
-            {
-                if (pairs[pairIndex].second == losers[idx])
-                {
-                    pairWinner = pairs[pairIndex].first;
-                    break;
-                }
-            }
-            size_t pairWinnerPos = 0;
-            for (size_t winnerIndex = 0; winnerIndex < winners.size(); winnerIndex++)
-            {
-                if (winners[winnerIndex] == pairWinner)
-                {
-                    pairWinnerPos = winnerIndex;
-                    break;
-                }
-            }
-            binary_insert(winners, losers[idx], pairWinnerPos);
-        }
-        //update boundaries for the next batch
-        size_t next_endpoint = endpoint + 2 * previous_endpoint;
-        previous_endpoint = endpoint;
-        endpoint = next_endpoint;
-    }
+    insert_losers(winners, losers, pairs);
 
     //insert the unpaired value if it exists (straggler)
     if (has_unpaired_value)
