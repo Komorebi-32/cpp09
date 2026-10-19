@@ -55,16 +55,20 @@ int main(int ac, char **av)
     }
 
     std::clock_t start = std::clock();
-    std::vector<unsigned int> sorted_vector = merge_insert_sort(input);
+    size_t vector_comparison_count = 0;
+    std::vector<unsigned int> sorted_vector = merge_insert_sort(
+        input, vector_comparison_count);
     double vector_time_us = static_cast<double>(std::clock() - start)
         * 1000000.0 / CLOCKS_PER_SEC;
 
     std::deque<unsigned int> deque_input(input.begin(), input.end());
     start = std::clock();
-    merge_insert_sort(deque_input);
+    size_t deque_comparison_count = 0;
+    merge_insert_sort(deque_input, deque_comparison_count);
     double deque_time_us = static_cast<double>(std::clock() - start)
         * 1000000.0 / CLOCKS_PER_SEC;
 
-    print_results(input, sorted_vector, vector_time_us, deque_time_us);
+    print_results(input, sorted_vector, vector_time_us, deque_time_us,
+        vector_comparison_count, deque_comparison_count);
     return (0);
 }

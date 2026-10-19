@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <deque>
 #include <utility>
 #include <vector>
@@ -37,16 +38,20 @@ std::vector<std::pair<unsigned int, unsigned int> > make_pairs(
 /**
  * @brief Sorts values using the Ford-Johnson merge-insertion algorithm.
  * @param values Values to sort.
+ * @param comparison_count Receives the number of element-ordering comparisons.
  * @return A sorted copy of the values.
  */
-std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values);
+std::vector<unsigned int> merge_insert_sort(
+	std::vector<unsigned int> &values, size_t &comparison_count);
 
 /**
  * @brief Sorts values using the Ford-Johnson merge-insertion algorithm.
  * @param values Values to sort.
+ * @param comparison_count Receives the number of element-ordering comparisons.
  * @return A sorted copy of the values.
  */
-std::deque<unsigned int> merge_insert_sort(std::deque<unsigned int> &values);
+std::deque<unsigned int> merge_insert_sort(
+	std::deque<unsigned int> &values, size_t &comparison_count);
 
 /**
  * @brief Prints the input, sorted results, and processing times for both containers.
@@ -54,8 +59,11 @@ std::deque<unsigned int> merge_insert_sort(std::deque<unsigned int> &values);
  * @param vector_sorted Sorted values from the vector implementation.
  * @param vector_time_us Vector processing time in microseconds.
  * @param deque_time_us Deque processing time in microseconds.
+ * @param vector_comparison_count Number of vector element-ordering comparisons.
+ * @param deque_comparison_count Number of deque element-ordering comparisons.
  * @return Nothing.
  */
 void print_results(const std::vector<unsigned int> &input,
 	const std::vector<unsigned int> &vector_sorted, double vector_time_us,
-	double deque_time_us);
+	double deque_time_us, size_t vector_comparison_count,
+	size_t deque_comparison_count);

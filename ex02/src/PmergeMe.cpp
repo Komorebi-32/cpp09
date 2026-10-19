@@ -37,12 +37,13 @@ void fill_input(std::vector<unsigned int> &input, char **av, int ac)
 
 template <typename Container>
 static std::vector<std::pair<unsigned int, unsigned int> > make_pairs_impl(
-	const Container &input)
+	const Container &input, size_t &comparison_count)
 {
 	std::vector<std::pair<unsigned int, unsigned int> > main_chain;
 
 	for (size_t i = 0; i + 1 < input.size(); i += 2)
     {
+		++comparison_count;
 		if (input[i] >= input[i + 1])
 			main_chain.push_back(std::make_pair(input[i], input[i + 1]));
 		else
@@ -54,12 +55,13 @@ static std::vector<std::pair<unsigned int, unsigned int> > make_pairs_impl(
 std::vector<std::pair<unsigned int, unsigned int> > make_pairs(
 	const std::vector<unsigned int> &input)
 {
-	return make_pairs_impl(input);
+	size_t comparison_count = 0;
+	return make_pairs_impl(input, comparison_count);
 }
 
 template <typename Container>
 static void binary_insert(Container &chain,
-	unsigned int value, size_t search_end)
+	unsigned int value, size_t search_end, size_t &comparison_count)
 {
 	size_t left = 0;
 	size_t right = search_end;
@@ -67,6 +69,7 @@ static void binary_insert(Container &chain,
 	while (left < right)
 	{
 		size_t mid = left + (right - left) / 2;
+		++comparison_count;
 		if (chain[mid] < value)
 			left = mid + 1;
 		else
@@ -173,7 +176,8 @@ static size_t find_pair_winner_pos(
 template <typename Container>
 static void insert_losers(
 	Container &main_chain, const std::vector<unsigned int> &losers,
-	const std::vector<std::pair<unsigned int, unsigned int> > &pairs)
+	const std::vector<std::pair<unsigned int, unsigned int> > &pairs,
+	size_t &comparison_count)
 {
 	size_t endpoint = 3;
 	size_t previous_endpoint = 1;
@@ -189,7 +193,8 @@ static void insert_losers(
 			// so that we insert the loser with binary search until the paired winner's index
 			size_t pairWinnerPos = find_pair_winner_pos(
 				losers[idx], main_chain, pairs);
-			binary_insert(main_chain, losers[idx], pairWinnerPos);
+			binary_insert(
+				main_chain, losers[idx], pairWinnerPos, comparison_count);
 		}
 		//update boundaries for the next batch
 		size_t next_endpoint = endpoint + 2 * previous_endpoint;
@@ -199,7 +204,8 @@ static void insert_losers(
 }
 
 template <typename Container>
-static Container merge_insert_sort_impl(Container &values)
+static Container merge_insert_sort_impl(
+	Container &values, size_t &comparison_count)
 {
     //stop condition : values is already sorted if size <= 1
     if (values.size() <= 1)
@@ -207,7 +213,7 @@ static Container merge_insert_sort_impl(Container &values)
     
     //pair adjacent values as (winner a_i, loser b_i)
     std::vector<std::pair<unsigned int, unsigned int> > pairs; // (12, 3)  (10, 2)  (8, 1)
-    pairs = make_pairs_impl(values);
+    pairs = make_pairs_impl(values, comparison_count);
 
     //keep winners and unpaired value
     Container main_chain;
@@ -216,7 +222,7 @@ static Container merge_insert_sort_impl(Container &values)
     keep_winners_and_straggler(
         values, pairs, main_chain, has_unpaired_value, unpaired_value);
     
-    main_chain = merge_insert_sort_impl(main_chain);
+    main_chain = merge_insert_sort_impl(main_chain, comparison_count);
 
     //keep track of the losers in the same order as their sorted winners
     std::vector<unsigned int> losers = keep_losers(main_chain, pairs);
@@ -227,23 +233,28 @@ static Container merge_insert_sort_impl(Container &values)
         main_chain.insert(main_chain.begin(), losers[0]);
 
     //insert losers following the Jacobsthal suite order
-    insert_losers(main_chain, losers, pairs);
+    insert_losers(main_chain, losers, pairs, comparison_count);
 
     //insert the unpaired value if it exists (straggler)
     if (has_unpaired_value)
-        binary_insert(main_chain, unpaired_value, main_chain.size());
+        binary_insert(
+            main_chain, unpaired_value, main_chain.size(), comparison_count);
 
     return main_chain;
 }
 
-std::vector<unsigned int> merge_insert_sort(std::vector<unsigned int> &values)
+std::vector<unsigned int> merge_insert_sort(
+	std::vector<unsigned int> &values, size_t &comparison_count)
 {
-    return merge_insert_sort_impl(values);
+	comparison_count = 0;
+	return merge_insert_sort_impl(values, comparison_count);
 }
 
-std::deque<unsigned int> merge_insert_sort(std::deque<unsigned int> &values)
+std::deque<unsigned int> merge_insert_sort(
+	std::deque<unsigned int> &values, size_t &comparison_count)
 {
-    return merge_insert_sort_impl(values);
+	comparison_count = 0;
+	return merge_insert_sort_impl(values, comparison_count);
 }
 
 template <typename Container>
@@ -257,18 +268,46 @@ static void print_sequence(const Container &values)
     }
 }
 
+static size_t ford_johnson_comparison_bound(size_t value_count)
+{
+    size_t comparison_bound = 0;
+    for (size_t i = 0; i < value_count; ++i)
+    {
+        size_t k = i + 1;
+        size_t search_length = (k / 4) * 3 + ((k % 4) * 3 + 3) / 4;
+        size_t comparisons = 0;
+        size_t remaining_length = search_length - 1;
+
+        while (remaining_length > 0)
+        {
+            remaining_length >>= 1;
+            ++comparisons;
+        }
+        comparison_bound += comparisons;
+    }
+    return comparison_bound;
+}
+
 void print_results(const std::vector<unsigned int> &input,
     const std::vector<unsigned int> &vector_sorted, double vector_time_us,
-    double deque_time_us)
+    double deque_time_us, size_t vector_comparison_count,
+    size_t deque_comparison_count)
 {
     std::cout << "Before: ";
     print_sequence(input);
     std::cout << '\n' << "After: ";
     print_sequence(vector_sorted);
     std::cout << '\n'
+        << "Ford-Johnson worst-case comparison bound for " << input.size()
+        << " elements: " << ford_johnson_comparison_bound(input.size())
+        << '\n'
         << "Time to process a range of " << input.size()
         << " elements with std::vector: " << std::fixed
         << std::setprecision(3) << vector_time_us << " us\n";
+    std::cout << "Number of comparisons with std::vector: "
+        << vector_comparison_count << '\n';
     std::cout << "Time to process a range of " << input.size()
         << " elements with std::deque: " << deque_time_us << " us\n";
+    std::cout << "Number of comparisons with std::deque: "
+        << deque_comparison_count << '\n';
 }
