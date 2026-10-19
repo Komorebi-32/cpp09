@@ -298,16 +298,15 @@ void print_results(const std::vector<unsigned int> &input,
     std::cout << '\n' << "After: ";
     print_sequence(vector_sorted);
     std::cout << '\n'
-        << "Ford-Johnson worst-case comparison bound for " << input.size()
-        << " elements: " << ford_johnson_comparison_bound(input.size())
-        << '\n'
         << "Time to process a range of " << input.size()
         << " elements with std::vector: " << std::fixed
         << std::setprecision(3) << vector_time_us << " us\n";
-    std::cout << "Number of comparisons with std::vector: "
-        << vector_comparison_count << '\n';
     std::cout << "Time to process a range of " << input.size()
         << " elements with std::deque: " << deque_time_us << " us\n";
+    std::cout << "Ford-Johnson worst-case comparison bound for " << input.size()
+        << " elements: " << ford_johnson_comparison_bound(input.size()) << '\n';
+    std::cout << "Number of comparisons with std::vector: "
+        << vector_comparison_count << '\n';
     std::cout << "Number of comparisons with std::deque: "
         << deque_comparison_count << '\n';
 }
