@@ -15,6 +15,15 @@
 #include <exception>
 #include <iostream>
 
+/**
+ * @brief Validates command-line arguments and runs the Bitcoin exchange
+ *        conversion.
+ * @param argc Number of command-line arguments.
+ * @param argv Command-line argument strings; argv[1] is the input file path.
+ * @return 0 on success; 1 if the arguments or processing are invalid.
+ * @note Standard exceptions from setup and input processing are caught and
+ *       reported to standard error.
+ */
 int main(int argc, char *argv[])
 {
 	if (argc != 2)
