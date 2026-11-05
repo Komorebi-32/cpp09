@@ -6,7 +6,7 @@
 /*   By: komorebi <komorebi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/28 16:33:26 by komorebi          #+#    #+#             */
-/*   Updated: 2026/11/05 16:44:45 by komorebi         ###   ########.fr       */
+/*   Updated: 2026/11/05 16:50:59 by komorebi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,6 @@ int main(int ac, char *av[])
     int i = 0;
     while (av[1][i])
     {
-        // std::cout << "iteration " << i << ": " << std::endl;
-
         if (av[1][i] != 32 && av[1][i + 1] && av[1][i + 1] != 32)
         {
             std::cerr << "Error" << std::endl;
@@ -64,8 +62,6 @@ int main(int ac, char *av[])
             return (1);
         }
         i++;
-        // std::cout << "iteration " << i << ": " << std::endl;
-        // std::cout << "polishList front == " << polishList.front() << std::endl;
     }
     if (polishList.size() == 1)
         std::cout << polishList.front() << std::endl;
