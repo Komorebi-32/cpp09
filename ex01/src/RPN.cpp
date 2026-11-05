@@ -6,7 +6,7 @@
 /*   By: komorebi <komorebi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/28 16:33:26 by komorebi          #+#    #+#             */
-/*   Updated: 2026/11/05 13:49:43 by komorebi         ###   ########.fr       */
+/*   Updated: 2026/11/05 13:56:42 by komorebi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,29 +15,6 @@
 #include "RPN.hpp"
 #include <limits>
 #include <stdexcept>
-
-static void check_overflow(char token, int lhs, int rhs)
-{
-    int maxInt = std::numeric_limits<int>::max();
-    int minInt = std::numeric_limits<int>::min();
-
-    if (token == '+' &&
-        ((rhs > 0 && lhs > maxInt - rhs) ||
-         (rhs < 0 && lhs < minInt - rhs)))
-        throw std::overflow_error("integer overflow");
-    if (token == '-' &&
-        ((rhs < 0 && lhs > maxInt + rhs) ||
-         (rhs > 0 && lhs < minInt + rhs)))
-        throw std::overflow_error("integer overflow");
-    if (token == '*' && lhs != 0 && rhs != 0 &&
-        ((lhs > 0 && rhs > 0 && lhs > maxInt / rhs) ||
-         (lhs > 0 && rhs < 0 && rhs < minInt / lhs) ||
-         (lhs < 0 && rhs > 0 && lhs < minInt / rhs) ||
-         (lhs < 0 && rhs < 0 && lhs < maxInt / rhs)))
-        throw std::overflow_error("integer overflow");
-    if (token == '/' && lhs == minInt && rhs == -1)
-        throw std::overflow_error("integer overflow");
-}
 
 int main(int ac, char *av[])
 {
@@ -53,6 +30,11 @@ int main(int ac, char *av[])
     {
         std::cout << "iteration " << i << ": " << std::endl;
 
+        if (av[1][i] != 32 && av[1][i + 1] && av[1][i + 1] != 32)
+        {
+            std::cerr << "Error" << std::endl;
+            return (1);
+        }
         if (av[1][i] == 32)
         {
             i++;
@@ -108,4 +90,27 @@ void perform_operation(char token, std::list<int> &polishList)
     if (token == '-')
         res = lhs - rhs;
     polishList.push_back(res);
+}
+
+static void check_overflow(char token, int lhs, int rhs)
+{
+    int maxInt = std::numeric_limits<int>::max();
+    int minInt = std::numeric_limits<int>::min();
+
+    if (token == '+' &&
+        ((rhs > 0 && lhs > maxInt - rhs) ||
+         (rhs < 0 && lhs < minInt - rhs)))
+        throw std::overflow_error("integer overflow");
+    if (token == '-' &&
+        ((rhs < 0 && lhs > maxInt + rhs) ||
+         (rhs > 0 && lhs < minInt + rhs)))
+        throw std::overflow_error("integer overflow");
+    if (token == '*' && lhs != 0 && rhs != 0 &&
+        ((lhs > 0 && rhs > 0 && lhs > maxInt / rhs) ||
+         (lhs > 0 && rhs < 0 && rhs < minInt / lhs) ||
+         (lhs < 0 && rhs > 0 && lhs < minInt / rhs) ||
+         (lhs < 0 && rhs < 0 && lhs < maxInt / rhs)))
+        throw std::overflow_error("integer overflow");
+    if (token == '/' && lhs == minInt && rhs == -1)
+        throw std::overflow_error("integer overflow");
 }
