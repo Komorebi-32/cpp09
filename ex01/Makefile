@@ -6,13 +6,13 @@
 #    By: komorebi <komorebi@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/07/16 14:08:56 by bkaras-g          #+#    #+#              #
-#    Updated: 2026/05/06 12:13:06 by komorebi         ###   ########.fr        #
+#    Updated: 2026/11/05 11:28:52 by komorebi         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 .SILENT:
 
-NAME = rpn
+NAME = RPN
 
 SRC_FILES = main.cpp RPN.cpp
 
