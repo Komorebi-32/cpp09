@@ -13,7 +13,6 @@
 #include "BitcoinExchange.hpp"
 
 #include <cctype>
-#include <cerrno>
 #include <cstdlib>
 #include <fstream>
 #include <iomanip>
@@ -109,11 +108,12 @@ bool BitcoinExchange::isValidDate(const std::string &date)
 }
 
 /**
- * @brief Parses a finite decimal number ([-]digits[.digits]) from `text` and stores it into `number`.
+ * @brief Parses a decimal number ([-]digits[.digits]) from `text`.
  * @param text The string to parse.
  * @param number [out] Receives the parsed value when parsing succeeds.
- * @return true if the entire string is a finite, representable double;
- *         otherwise, false.
+ * @return true if the entire string is a valid number; otherwise, false.
+ * @note On overflow `number` is +-infinity and true is returned, so the
+ *       caller can report the value as too large / not positive.
  */
 bool BitcoinExchange::parseNumber(const std::string &text, double &number)
 {
@@ -137,21 +137,14 @@ bool BitcoinExchange::parseNumber(const std::string &text, double &number)
 		return false;
 
 	char *end = NULL;
-	errno = 0;
 	number = std::strtod(text.c_str(), &end);
 
-    //check if "number" is a number
 	//end is the first char that `strtod()` couldn't parse
 	//end == text.c_str() — nothing was parsed.
 	//*end != '\0' — parsing stopped before the end
-	//errno == ERANGE — underflow or overflow
-	if (end == text.c_str() || *end != '\0' || errno == ERANGE)
-		return false;
-
-    //check if number is respectively NaN, inf or -inf
-    //NaN is the unusual floating-point value that is unequal to itself.
-	if (number != number || number > std::numeric_limits<double>::max()
-		|| number < -std::numeric_limits<double>::max())
+	//ERANGE (overflow -> +-inf, underflow -> ~0) is accepted on purpose so that
+	//huge values are reported as "too large" / "not positive" by the caller.
+	if (end == text.c_str() || *end != '\0')
 		return false;
 	if (number == 0.0)
 		number = 0.0; //turns "-0" into +0
@@ -185,7 +178,8 @@ void BitcoinExchange::loadDatabase()
 		std::string date = trim(line.substr(0, comma));
 		std::string rateText = trim(line.substr(comma + 1));
 		double rate = 0.0;
-		if (!isValidDate(date) || !parseNumber(rateText, rate) || rate < 0.0)
+		if (!isValidDate(date) || !parseNumber(rateText, rate) || rate < 0.0
+			|| rate > std::numeric_limits<double>::max())
 			throw std::runtime_error("invalid row in data.csv");
 
         //insert date & rate. std::map::insert() returns a pair, first being an
