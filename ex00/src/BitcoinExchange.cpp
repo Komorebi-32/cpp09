@@ -122,7 +122,7 @@ void BitcoinExchange::loadDatabase()
 {
 	std::ifstream database("data.csv");
 	if (!database.is_open())
-		throw std::runtime_error("could not open data.csv");
+		throw std::runtime_error("could not open \"data.csv\". Put the file in the working directory.");
 
 	std::string line;
 	if (!std::getline(database, line) || trim(line) != "date,exchange_rate")
