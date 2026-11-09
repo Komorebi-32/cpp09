@@ -16,8 +16,8 @@
 #include <iostream>
 
 /**
- * @brief Validates command-line arguments and runs the Bitcoin exchange
- *        conversion.
+ * @brief Parses the input file, validates each date/value pair, and
+ *        converts the amounts to their Bitcoin value using the exchange rate.
  * @param argc Number of command-line arguments.
  * @param argv Command-line argument strings; argv[1] is the input file path.
  * @return 0 on success; 1 if the arguments or processing are invalid.
