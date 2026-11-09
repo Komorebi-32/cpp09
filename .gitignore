@@ -3,3 +3,8 @@
 btc
 rpn
 PmergeMe
+# build artifacts
+obj/
+btc
+RPN
+PmergeMe
