@@ -203,8 +203,9 @@ void BitcoinExchange::loadDatabase()
  *        corresponding exchange rate and prints the result.
  * @param filename Path to the input file.
  * @return Nothing.
- * @throws std::runtime_error If the file cannot be opened, its header is
- *         invalid, or an I/O error occurs while reading it.
+ * @throws std::runtime_error If the file cannot be opened or an I/O error
+ *         occurs while reading it.
+ * @note The "date | value" header line is optional.
  * @note Invalid data rows and dates earlier than the first available rate are
  *       reported to standard error and skipped.
  */
@@ -215,11 +216,17 @@ void BitcoinExchange::processInput(const std::string &filename) const
 		throw std::runtime_error("could not open input file");
 
 	std::string line;
-	if (!std::getline(input, line) || trim(line) != "date | value")
-		throw std::runtime_error("input file has a missing or invalid header");
-
+	bool firstLine = true;
 	while (std::getline(input, line))
 	{
+		//the "date | value" header is optional: skip it if present, otherwise
+		//the first line is processed like any other data line
+		if (firstLine)
+		{
+			firstLine = false;
+			if (trim(line) == "date | value")
+				continue;
+		}
 		std::string::size_type separator = line.find('|');
 		if (separator == std::string::npos
 			|| line.find('|', separator + 1) != std::string::npos)
