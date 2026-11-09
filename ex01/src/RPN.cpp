@@ -13,11 +13,17 @@
 #include "RPN.hpp"
 
 #include <limits>
+#include <list>
 #include <stdexcept>
 
 static void check_overflow(char token, int lhs, int rhs);
 
-void perform_operation(char token, std::list<int> &polishList)
+/**
+ * @brief Pops the two top operands, applies token and pushes the result.
+ * @throws std::domain_error On division by zero.
+ * @throws std::overflow_error If the result does not fit in an int.
+ */
+static void perform_operation(char token, std::list<int> &polishList)
 {
     int rhs = polishList.back();
     polishList.pop_back();
@@ -60,4 +66,38 @@ static void check_overflow(char token, int lhs, int rhs)
         throw std::overflow_error("integer overflow");
     if (token == '/' && lhs == minInt && rhs == -1)
         throw std::overflow_error("integer overflow");
+}
+
+/**
+ * @brief Evaluates a reverse Polish notation expression.
+ * @param expression Single-digit numbers and the operators + - * / separated
+ *        by single spaces.
+ * @return The result of the expression.
+ * @throws std::exception If the expression is malformed, divides by zero or
+ *         overflows an int.
+ */
+int evaluate_rpn(const std::string &expression)
+{
+    std::list<int> polishList;
+
+    for (std::string::size_type i = 0; i < expression.size(); ++i)
+    {
+        char c = expression[i];
+        bool lastChar = (i + 1 == expression.size());
+
+        if (c == ' ')
+            continue;
+        if (!lastChar && expression[i + 1] != ' ')
+            throw std::invalid_argument("tokens must be separated by spaces");
+        if (c >= '0' && c <= '9')
+            polishList.push_back(c - '0');
+        else if ((c == '*' || c == '/' || c == '+' || c == '-')
+                && polishList.size() >= 2)
+            perform_operation(c, polishList);
+        else
+            throw std::invalid_argument("invalid token or missing operand");
+    }
+    if (polishList.size() != 1)
+        throw std::invalid_argument("invalid expression");
+    return polishList.front();
 }

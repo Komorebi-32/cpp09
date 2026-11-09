@@ -13,11 +13,8 @@
 #ifndef RPN_HPP
 #define RPN_HPP
 
-#include <iostream>
-#include <list>
-#include <limits>
-#include <stdexcept>
+#include <string>
 
-void perform_operation(char token, std::list<int> &polishList);
+int evaluate_rpn(const std::string &expression);
 
 #endif
