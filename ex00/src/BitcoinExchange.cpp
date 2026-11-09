@@ -80,7 +80,7 @@ bool BitcoinExchange::isValidDate(const std::string &date)
 }
 
 /**
- * @brief Parses a finite double from text.
+ * @brief Parses a finite double from `text` and stores it into `number`.
  * @param text The string to parse.
  * @param number [out] Receives the parsed value when parsing succeeds.
  * @return true if the entire string is a finite, representable double;
@@ -96,6 +96,10 @@ bool BitcoinExchange::parseNumber(const std::string &text, double &number)
 	number = std::strtod(text.c_str(), &end);
 
     //check if "number" is a number
+	//end is the first char that `strtod()` couldn't parse
+	//end == text.c_str() — nothing was parsed.
+	//*end != '\0' — parsing stopped before the end
+	//errno == ERANGE — underflow or overflow
 	if (end == text.c_str() || *end != '\0' || errno == ERANGE)
 		return false;
 
@@ -145,7 +149,7 @@ void BitcoinExchange::loadDatabase()
 	}
 
     //bad() checks the stream’s badbit status. It returns true if a serious
-    //I/O error occurred while reading the file—for example, a device or
+    //I/O error occurred while reading the file — for example, a device or
     //underlying read failure.
 	if (database.bad())
 		throw std::runtime_error("error reading data.csv");
