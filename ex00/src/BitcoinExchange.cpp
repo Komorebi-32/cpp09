@@ -31,6 +31,34 @@ BitcoinExchange::BitcoinExchange()
 }
 
 /**
+ * @brief Copy constructor.
+ * @param other The object to copy the exchange rates from.
+ */
+BitcoinExchange::BitcoinExchange(const BitcoinExchange &other)
+	: _rates(other._rates)
+{
+}
+
+/**
+ * @brief Copy assignment operator.
+ * @param other The object to copy the exchange rates from.
+ * @return A reference to this object.
+ */
+BitcoinExchange &BitcoinExchange::operator=(const BitcoinExchange &other)
+{
+	if (this != &other)
+		_rates = other._rates;
+	return *this;
+}
+
+/**
+ * @brief Destructor.
+ */
+BitcoinExchange::~BitcoinExchange()
+{
+}
+
+/**
  * @brief Returns a copy of text with leading and trailing whitespace removed.
  * @param text The string to trim.
  * @return The trimmed string.
