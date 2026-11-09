@@ -109,7 +109,7 @@ bool BitcoinExchange::isValidDate(const std::string &date)
 }
 
 /**
- * @brief Parses a finite double from `text` and stores it into `number`.
+ * @brief Parses a finite decimal number ([-]digits[.digits]) from `text` and stores it into `number`.
  * @param text The string to parse.
  * @param number [out] Receives the parsed value when parsing succeeds.
  * @return true if the entire string is a finite, representable double;
@@ -118,6 +118,22 @@ bool BitcoinExchange::isValidDate(const std::string &date)
 bool BitcoinExchange::parseNumber(const std::string &text, double &number)
 {
 	if (text.empty())
+		return false;
+
+	//only accept [-]digits[.digits] (rejects '+', exponents, hex, nan, inf)
+	std::string::size_type i = (text[0] == '-') ? 1 : 0;
+	std::string::size_type digits = 0;
+	bool dot = false;
+	for (; i < text.size(); ++i)
+	{
+		if (std::isdigit(static_cast<unsigned char>(text[i])))
+			++digits;
+		else if (text[i] == '.' && !dot)
+			dot = true;
+		else
+			return false;
+	}
+	if (digits == 0)
 		return false;
 
 	char *end = NULL;
@@ -137,6 +153,8 @@ bool BitcoinExchange::parseNumber(const std::string &text, double &number)
 	if (number != number || number > std::numeric_limits<double>::max()
 		|| number < -std::numeric_limits<double>::max())
 		return false;
+	if (number == 0.0)
+		number = 0.0; //turns "-0" into +0
 	return true;
 }
 
