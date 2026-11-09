@@ -16,6 +16,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
@@ -242,7 +243,7 @@ void BitcoinExchange::processInput(const std::string &filename) const
 			continue;
 		}
 		--rate;
-		std::cout << date << " => " << value << " = "
+		std::cout << std::setprecision(15) << date << " => " << value << " = "
 			<< value * rate->second << std::endl;
 	}
 	if (input.bad())
