@@ -227,16 +227,22 @@ void BitcoinExchange::processInput(const std::string &filename) const
 			if (trim(line) == "date | value")
 				continue;
 		}
-		std::string::size_type separator = line.find('|');
+		//tolerate CRLF line endings
+		if (!line.empty() && line[line.size() - 1] == '\r')
+			line.erase(line.size() - 1);
+
+		//strict format: exactly one " | " and no other '|'
+		std::string::size_type separator = line.find(" | ");
 		if (separator == std::string::npos
-			|| line.find('|', separator + 1) != std::string::npos)
+			|| line.find('|') != separator + 1
+			|| line.find('|', separator + 2) != std::string::npos)
 		{
 			std::cerr << "Error: bad input => " << line << std::endl;
 			continue;
 		}
 
-		std::string date = trim(line.substr(0, separator));
-		std::string valueText = trim(line.substr(separator + 1));
+		std::string date = line.substr(0, separator);
+		std::string valueText = line.substr(separator + 3);
 		double value = 0.0;
 		if (!isValidDate(date) || !parseNumber(valueText, value))
 		{
