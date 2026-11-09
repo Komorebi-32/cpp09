@@ -10,11 +10,15 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef RPN_HPP
+#define RPN_HPP
+
 #include <iostream>
 #include <list>
 #include <limits>
 #include <stdexcept>
-#pragma once
 
 void perform_operation(char token, std::list<int> &polishList);
 static void check_overflow(char token, int lhs, int rhs);
+
+#endif
