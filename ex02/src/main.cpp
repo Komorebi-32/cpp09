@@ -54,15 +54,20 @@ int main(int ac, char **av)
         return (1);
     }
 
+    // Each timer covers data management (parsing av into the container)
+    // and the sort. 'input' above was parsed and validated outside the timers.
     std::clock_t start = std::clock();
+    std::vector<unsigned int> vector_input;
+    fill_input(vector_input, av, ac);
     size_t vector_comparison_count = 0;
     std::vector<unsigned int> sorted_vector = merge_insert_sort(
-        input, vector_comparison_count);
+        vector_input, vector_comparison_count);
     double vector_time_us = static_cast<double>(std::clock() - start)
         * 1000000.0 / CLOCKS_PER_SEC;
 
-    std::deque<unsigned int> deque_input(input.begin(), input.end());
     start = std::clock();
+    std::deque<unsigned int> deque_input;
+    fill_input(deque_input, av, ac);
     size_t deque_comparison_count = 0;
     merge_insert_sort(deque_input, deque_comparison_count);
     double deque_time_us = static_cast<double>(std::clock() - start)

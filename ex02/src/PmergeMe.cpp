@@ -52,7 +52,8 @@ static void reject_duplicates(const std::vector<unsigned int> &values)
 		throw std::invalid_argument("duplicate values are not accepted");
 }
 
-void fill_input(std::vector<unsigned int> &input, char **av, int ac)
+template <typename Container>
+static void fill_input_impl(Container &input, char **av, int ac)
 {
 	for (int i = 1; i < ac; i++)
 	{
@@ -64,7 +65,17 @@ void fill_input(std::vector<unsigned int> &input, char **av, int ac)
 			throw std::overflow_error("input number exceeds unsigned int max");
 		input.push_back(static_cast<unsigned int>(value));
 	}
+}
+
+void fill_input(std::vector<unsigned int> &input, char **av, int ac)
+{
+	fill_input_impl(input, av, ac);
 	reject_duplicates(input);
+}
+
+void fill_input(std::deque<unsigned int> &input, char **av, int ac)
+{
+	fill_input_impl(input, av, ac);
 }
 
 template <typename Container>

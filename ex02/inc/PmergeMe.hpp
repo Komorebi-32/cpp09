@@ -29,6 +29,17 @@
 void fill_input(std::vector<unsigned int> &input, char **av, int ac);
 
 /**
+ * @brief Parses command-line values and appends them to input.
+ * Does not check for duplicates: call the vector overload first.
+ * @param input Deque that receives the parsed values.
+ * @param av Command-line argument array.
+ * @param ac Number of command-line arguments.
+ * @return Nothing.
+ * @throws std::overflow_error if a value exceeds unsigned int's range.
+ */
+void fill_input(std::deque<unsigned int> &input, char **av, int ac);
+
+/**
  * @brief Groups adjacent input values into pairs with the larger value first.
  * @param input Values to group into pairs.
  * @return Vector of winner-first pairs.
