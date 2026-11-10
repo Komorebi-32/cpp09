@@ -73,7 +73,6 @@ int main(int ac, char **av)
     double deque_time_us = static_cast<double>(std::clock() - start)
         * 1000000.0 / CLOCKS_PER_SEC;
 
-    print_results(input, sorted_vector, vector_time_us, deque_time_us,
-        vector_comparison_count, deque_comparison_count);
+    print_results(input, sorted_vector, vector_time_us, deque_time_us);
     return (0);
 }

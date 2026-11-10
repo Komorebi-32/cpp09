@@ -313,30 +313,9 @@ static void print_sequence(const Container &values)
     }
 }
 
-static size_t ford_johnson_comparison_bound(size_t value_count)
-{
-    size_t comparison_bound = 0;
-    for (size_t i = 0; i < value_count; ++i)
-    {
-        size_t k = i + 1;
-        size_t search_length = (k / 4) * 3 + ((k % 4) * 3 + 3) / 4;
-        size_t comparisons = 0;
-        size_t remaining_length = search_length - 1;
-
-        while (remaining_length > 0)
-        {
-            remaining_length >>= 1;
-            ++comparisons;
-        }
-        comparison_bound += comparisons;
-    }
-    return comparison_bound;
-}
-
 void print_results(const std::vector<unsigned int> &input,
     const std::vector<unsigned int> &vector_sorted, double vector_time_us,
-    double deque_time_us, size_t vector_comparison_count,
-    size_t deque_comparison_count)
+    double deque_time_us)
 {
     std::cout << "Before: ";
     print_sequence(input);
@@ -348,10 +327,4 @@ void print_results(const std::vector<unsigned int> &input,
         << std::setprecision(3) << vector_time_us << " us\n";
     std::cout << "Time to process a range of " << input.size()
         << " elements with std::deque: " << deque_time_us << " us\n";
-    std::cout << "Ford-Johnson worst-case comparison bound for " << input.size()
-        << " elements: " << ford_johnson_comparison_bound(input.size()) << '\n';
-    std::cout << "Number of comparisons with std::vector: "
-        << vector_comparison_count << '\n';
-    std::cout << "Number of comparisons with std::deque: "
-        << deque_comparison_count << '\n';
 }
