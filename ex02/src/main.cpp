@@ -48,7 +48,7 @@ int main(int ac, char **av)
     {
         fill_input(input, av, ac);
     }
-    catch (const std::overflow_error &error)
+    catch (const std::exception &error)
     {
         std::cerr << error.what() << std::endl;
         return (1);

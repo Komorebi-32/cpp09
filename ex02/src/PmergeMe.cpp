@@ -38,6 +38,20 @@ struct matching_containers<std::deque<unsigned int> >
 	typedef std::deque<std::pair<unsigned int, unsigned int> > pairs_type;
 };
 
+/**
+ * @brief Throws if the same value appears more than once.
+ * Uniqueness is a hard precondition of the sort: keep_losers() and
+ * find_pair_winner_pos() locate pairs by value.
+ */
+static void reject_duplicates(const std::vector<unsigned int> &values)
+{
+	std::vector<unsigned int> copy(values);
+
+	std::sort(copy.begin(), copy.end());
+	if (std::adjacent_find(copy.begin(), copy.end()) != copy.end())
+		throw std::invalid_argument("duplicate values are not accepted");
+}
+
 void fill_input(std::vector<unsigned int> &input, char **av, int ac)
 {
 	for (int i = 1; i < ac; i++)
@@ -50,6 +64,7 @@ void fill_input(std::vector<unsigned int> &input, char **av, int ac)
 			throw std::overflow_error("input number exceeds unsigned int max");
 		input.push_back(static_cast<unsigned int>(value));
 	}
+	reject_duplicates(input);
 }
 
 template <typename Container>

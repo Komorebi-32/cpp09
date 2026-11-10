@@ -24,6 +24,7 @@
  * @param ac Number of command-line arguments.
  * @return Nothing.
  * @throws std::overflow_error if a value exceeds unsigned int's range.
+ * @throws std::invalid_argument if a value appears more than once.
  */
 void fill_input(std::vector<unsigned int> &input, char **av, int ac);
 
