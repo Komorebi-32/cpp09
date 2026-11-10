@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef PMERGEME_HPP
+# define PMERGEME_HPP
 
 #include <cstddef>
 #include <deque>
@@ -76,3 +77,5 @@ std::deque<unsigned int> merge_insert_sort(
 void print_results(const std::vector<unsigned int> &input,
 	const std::vector<unsigned int> &vector_sorted, double vector_time_us,
 	double deque_time_us);
+
+#endif
