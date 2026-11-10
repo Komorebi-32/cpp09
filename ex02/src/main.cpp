@@ -23,21 +23,21 @@ int main(int ac, char **av)
 {
     if (ac == 1)
     {
-        std::cout << "Usage: PmergeMe [list of positive ints separated by spaces]" << std::endl;
+        std::cerr << "Error" << std::endl;
         return (1);
     }
     for (int i = 1; i < ac; i++)
     {
         if (av[i][0] == '\0' || av[i][0] == '0')
         {
-            std::cout << "Provide only positive integers" << std::endl;
+            std::cerr << "Error" << std::endl;
             return (1);
         }
         for (int j = 0; av[i][j]; j++)
         {
             if (!std::isdigit(static_cast<unsigned char>(av[i][j])))
             {
-                std::cout << "Provide only positive integers" << std::endl;
+                std::cerr << "Error" << std::endl;
                 return (1);
             }
         }
@@ -48,9 +48,9 @@ int main(int ac, char **av)
     {
         fill_input(input, av, ac);
     }
-    catch (const std::exception &error)
+    catch (const std::exception &)
     {
-        std::cerr << error.what() << std::endl;
+        std::cerr << "Error" << std::endl;
         return (1);
     }
 
