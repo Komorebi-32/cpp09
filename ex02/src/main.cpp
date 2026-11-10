@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bkaras-g <bkaras-g@student.42.fr>          +#+  +:+       +#+        */
+/*   By: komorebi <komorebi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:31 by komorebi          #+#    #+#             */
-/*   Updated: 2026/10/16 15:22:40 by bkaras-g         ###   ########.fr       */
+/*   Updated: 2026/11/10 12:22:17 by komorebi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,14 +28,14 @@ int main(int ac, char **av)
     }
     for (int i = 1; i < ac; i++)
     {
-        if (av[i][0] == '\0')
+        if (av[i][0] == '\0' || av[i][0] == '0')
         {
             std::cout << "Provide only positive integers" << std::endl;
             return (1);
         }
         for (int j = 0; av[i][j]; j++)
         {
-            if (!std::isdigit(static_cast<unsigned char>(av[i][j])) || av[i][0] == '0')
+            if (!std::isdigit(static_cast<unsigned char>(av[i][j])))
             {
                 std::cout << "Provide only positive integers" << std::endl;
                 return (1);
