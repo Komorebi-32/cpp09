@@ -33,14 +33,12 @@ typedef std::pair<unsigned int, size_t> element;
 template <>
 struct matching_containers<std::vector<element> >
 {
-	typedef std::vector<element> values_type;
 	typedef std::vector<std::pair<element, element> > pairs_type;
 };
 
 template <>
 struct matching_containers<std::deque<element> >
 {
-	typedef std::deque<element> values_type;
 	typedef std::deque<std::pair<element, element> > pairs_type;
 };
 
@@ -160,11 +158,11 @@ static void keep_winners_and_straggler(
  * @return Losers ordered to match the sorted winners.
  */
 template <typename Container>
-static typename matching_containers<Container>::values_type keep_losers(
+static Container keep_losers(
 	Container &main_chain,
 	const typename matching_containers<Container>::pairs_type &pairs)
 {
-	typename matching_containers<Container>::values_type losers;
+	Container losers;
 
 	for (size_t j = 0; j < main_chain.size(); j++)
 	{
@@ -212,7 +210,7 @@ static size_t find_pair_winner_pos(
 template <typename Container>
 static void insert_losers(
 	Container &main_chain,
-	const typename matching_containers<Container>::values_type &losers,
+	const Container &losers,
 	const Container &winners,
 	size_t &comparison_count)
 {
@@ -262,8 +260,7 @@ static Container merge_insert_sort_impl(
     main_chain = merge_insert_sort_impl(main_chain, comparison_count);
 
     //keep track of the losers in the same order as their sorted winners
-    typename matching_containers<Container>::values_type losers =
-        keep_losers(main_chain, pairs);
+    Container losers = keep_losers(main_chain, pairs);
     //sorted winners, before any loser is inserted: winners[i] pairs with losers[i]
     const Container winners(main_chain);
 
