@@ -24,20 +24,6 @@
 template <typename Container>
 struct matching_containers;
 
-template <>
-struct matching_containers<std::vector<unsigned int> >
-{
-	typedef std::vector<unsigned int> values_type;
-	typedef std::vector<std::pair<unsigned int, unsigned int> > pairs_type;
-};
-
-template <>
-struct matching_containers<std::deque<unsigned int> >
-{
-	typedef std::deque<unsigned int> values_type;
-	typedef std::deque<std::pair<unsigned int, unsigned int> > pairs_type;
-};
-
 // Element sorted by the recursion: (value, tag). The tag is the index of the
 // pair the element belongs to in the caller's level, so a level can find a
 // sorted winner's pair in O(1) instead of searching by value.
@@ -113,13 +99,6 @@ static typename matching_containers<Container>::pairs_type make_pairs_impl(
 			main_chain.push_back(std::make_pair(input[i + 1], input[i]));
     }
     return (main_chain);
-}
-
-std::vector<std::pair<unsigned int, unsigned int> > make_pairs(
-	const std::vector<unsigned int> &input)
-{
-	size_t comparison_count = 0;
-	return make_pairs_impl(input, comparison_count);
 }
 
 template <typename Container>

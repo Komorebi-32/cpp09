@@ -15,7 +15,6 @@
 
 #include <cstddef>
 #include <deque>
-#include <utility>
 #include <vector>
 
 /**
@@ -39,14 +38,6 @@ void fill_input(std::vector<unsigned int> &input, char **av, int ac);
  * @throws std::overflow_error if a value exceeds unsigned int's range.
  */
 void fill_input(std::deque<unsigned int> &input, char **av, int ac);
-
-/**
- * @brief Groups adjacent input values into pairs with the larger value first.
- * @param input Values to group into pairs.
- * @return Vector of winner-first pairs.
- */
-std::vector<std::pair<unsigned int, unsigned int> > make_pairs(
-	const std::vector<unsigned int> &input);
 
 /**
  * @brief Sorts values using the Ford-Johnson merge-insertion algorithm.
