@@ -38,10 +38,30 @@ struct matching_containers<std::deque<unsigned int> >
 	typedef std::deque<std::pair<unsigned int, unsigned int> > pairs_type;
 };
 
+// Element sorted by the recursion: (value, tag). The tag is the index of the
+// pair the element belongs to in the caller's level, so a level can find a
+// sorted winner's pair in O(1) instead of searching by value.
+// std::pair compares value first, so ordering is the same as on plain values.
+typedef std::pair<unsigned int, size_t> element;
+
+template <>
+struct matching_containers<std::vector<element> >
+{
+	typedef std::vector<element> values_type;
+	typedef std::vector<std::pair<element, element> > pairs_type;
+};
+
+template <>
+struct matching_containers<std::deque<element> >
+{
+	typedef std::deque<element> values_type;
+	typedef std::deque<std::pair<element, element> > pairs_type;
+};
+
 /**
  * @brief Throws if the same value appears more than once.
- * Uniqueness is a hard precondition of the sort: keep_losers() and
- * find_pair_winner_pos() locate pairs by value.
+ * Uniqueness is a hard precondition of the sort: find_pair_winner_pos()
+ * locates a winner in the main chain by its value.
  */
 static void reject_duplicates(const std::vector<unsigned int> &values)
 {
@@ -104,7 +124,8 @@ std::vector<std::pair<unsigned int, unsigned int> > make_pairs(
 
 template <typename Container>
 static void binary_insert(Container &chain,
-	unsigned int value, size_t search_end, size_t &comparison_count)
+	const typename Container::value_type &value, size_t search_end,
+	size_t &comparison_count)
 {
 	size_t left = 0;
 	size_t right = search_end;
@@ -125,7 +146,8 @@ static void binary_insert(Container &chain,
  * @brief Keeps the pair winners and any unpaired input value.
  * @param values Input values being sorted.
  * @param pairs Winner-first pairs from the input values.
- * @param winners Container that receives the pair winners.
+ * @param winners Container that receives the pair winners, each tagged with
+ *        the index of its pair.
  * @param has_unpaired_value Set to true when the input has an unpaired value.
  * @param unpaired_value Receives the unpaired input value when present.
  * @return Nothing.
@@ -135,10 +157,10 @@ static void keep_winners_and_straggler(
 	const Container &values,
 	const typename matching_containers<Container>::pairs_type &pairs,
 	Container &winners, bool &has_unpaired_value,
-	unsigned int &unpaired_value)
+	typename Container::value_type &unpaired_value)
 {
 	for (size_t i = 0; i < pairs.size(); i++)
-		winners.push_back(pairs[i].first);
+		winners.push_back(element(pairs[i].first.first, i));
 
 	if (values.size() % 2 == 1)
 	{
@@ -151,83 +173,75 @@ static void keep_winners_and_straggler(
 
 /**
  * @brief Keeps losers in the order of their sorted winners.
- * @param main_chain Sorted pair winners.
+ * The recursion returns the winners tagged with their pair index, so each
+ * pair is found in O(1). The winners are then replaced by the original pair
+ * elements, which carry the caller's tags again.
+ * @param main_chain Sorted pair winners, tagged with their pair index.
  * @param pairs Winner-first pairs from the input values.
  * @return Losers ordered to match the sorted winners.
  */
 template <typename Container>
 static typename matching_containers<Container>::values_type keep_losers(
-	const Container &main_chain,
+	Container &main_chain,
 	const typename matching_containers<Container>::pairs_type &pairs)
 {
 	typename matching_containers<Container>::values_type losers;
 
 	for (size_t j = 0; j < main_chain.size(); j++)
 	{
-		for (size_t i = 0; i < pairs.size(); i++)
-		{
-			if (main_chain[j] == pairs[i].first)
-			{
-				losers.push_back(pairs[i].second);
-				break;
-			}
-		}
+		size_t pair_index = main_chain[j].second;
+		losers.push_back(pairs[pair_index].second);
+		main_chain[j] = pairs[pair_index].first;
 	}
 	return losers;
 }
 
 /**
- * @brief Finds the position of the winner paired with a loser.
- * @param loser Loser whose paired winner position is needed.
+ * @brief Finds the current position of a winner in the main chain.
+ * The main chain is always sorted and its values are unique, so a binary
+ * search finds the winner in O(log n). These lookups are bookkeeping, not
+ * Ford-Johnson comparisons, so they are not counted.
+ * @param winner Winner whose position is needed.
  * @param main_chain Sorted main chain.
- * @param pairs Winner-first pairs from the input values.
- * @return Position of the paired winner in the main chain.
+ * @return Position of the winner in the main chain.
  */
 template <typename Container>
 static size_t find_pair_winner_pos(
-	unsigned int loser, const Container &main_chain,
-	const typename matching_containers<Container>::pairs_type &pairs)
+	const typename Container::value_type &winner, const Container &main_chain)
 {
-	unsigned int pairWinner = 0;
-	for (size_t pairIndex = 0; pairIndex < pairs.size(); pairIndex++)
+	size_t left = 0;
+	size_t right = main_chain.size();
+
+	while (left < right)
 	{
-		if (pairs[pairIndex].second == loser)
-		{
-			pairWinner = pairs[pairIndex].first;
-			break;
-		}
+		size_t mid = left + (right - left) / 2;
+		if (main_chain[mid] < winner)
+			left = mid + 1;
+		else
+			right = mid;
 	}
-	size_t pairWinnerPos = 0;
-	for (size_t winnerIndex = 0; winnerIndex < main_chain.size(); winnerIndex++)
-	{
-		if (main_chain[winnerIndex] == pairWinner)
-		{
-			pairWinnerPos = winnerIndex;
-			break;
-		}
-	}
-	return pairWinnerPos;
+	return left;
 }
 
 /**
  * @brief Inserts losers into the main chain in Jacobsthal sequence order.
  * @param main_chain Main chain receiving the losers.
  * @param losers Losers ordered to match the sorted winners.
- * @param pairs Winner-first pairs from the input values.
+ * @param winners Sorted winners; winners[i] is the partner of losers[i].
  * @return Nothing.
  */
 template <typename Container>
 static void insert_losers(
 	Container &main_chain,
 	const typename matching_containers<Container>::values_type &losers,
-	const typename matching_containers<Container>::pairs_type &pairs,
+	const Container &winners,
 	size_t &comparison_count)
 {
 	size_t endpoint = 3;
 	size_t previous_endpoint = 1;
-	while (previous_endpoint < pairs.size())
+	while (previous_endpoint < winners.size())
 	{
-		size_t batch_end = std::min(endpoint, pairs.size());
+		size_t batch_end = std::min(endpoint, winners.size());
 		for (size_t idx = batch_end; idx > previous_endpoint; )
 		{
 			--idx; // decrementing to switch from Ford-Johnson pairs that are 1-based
@@ -236,7 +250,7 @@ static void insert_losers(
 			// determine the position of the winner paired to the loser we want to insert
 			// so that we insert the loser with binary search until the paired winner's index
 			size_t pairWinnerPos = find_pair_winner_pos(
-				losers[idx], main_chain, pairs);
+				winners[idx], main_chain);
 			binary_insert(
 				main_chain, losers[idx], pairWinnerPos, comparison_count);
 		}
@@ -262,7 +276,7 @@ static Container merge_insert_sort_impl(
     //keep winners and unpaired value
     Container main_chain;
     bool has_unpaired_value = false;
-    unsigned int unpaired_value = 0;
+    typename Container::value_type unpaired_value;
     keep_winners_and_straggler(
         values, pairs, main_chain, has_unpaired_value, unpaired_value);
     
@@ -271,14 +285,16 @@ static Container merge_insert_sort_impl(
     //keep track of the losers in the same order as their sorted winners
     typename matching_containers<Container>::values_type losers =
         keep_losers(main_chain, pairs);
-    
+    //sorted winners, before any loser is inserted: winners[i] pairs with losers[i]
+    const Container winners(main_chain);
+
     //include b1 at the beginning of the chain, since it's the loser of a1 
     //that is at the beginning of the chain
     if (!losers.empty())
         main_chain.insert(main_chain.begin(), losers[0]);
 
     //insert losers following the Jacobsthal suite order
-    insert_losers(main_chain, losers, pairs, comparison_count);
+    insert_losers(main_chain, losers, winners, comparison_count);
 
     //insert the unpaired value if it exists (straggler)
     if (has_unpaired_value)
@@ -288,18 +304,34 @@ static Container merge_insert_sort_impl(
     return main_chain;
 }
 
+// The public functions take plain values: they tag each value with 0 (the top
+// level has no caller to read the tag), sort, and strip the tags again.
 std::vector<unsigned int> merge_insert_sort(
 	std::vector<unsigned int> &values, size_t &comparison_count)
 {
 	comparison_count = 0;
-	return merge_insert_sort_impl(values, comparison_count);
+	std::vector<element> tagged;
+	for (size_t i = 0; i < values.size(); i++)
+		tagged.push_back(element(values[i], 0));
+	tagged = merge_insert_sort_impl(tagged, comparison_count);
+	std::vector<unsigned int> sorted;
+	for (size_t i = 0; i < tagged.size(); i++)
+		sorted.push_back(tagged[i].first);
+	return sorted;
 }
 
 std::deque<unsigned int> merge_insert_sort(
 	std::deque<unsigned int> &values, size_t &comparison_count)
 {
 	comparison_count = 0;
-	return merge_insert_sort_impl(values, comparison_count);
+	std::deque<element> tagged;
+	for (size_t i = 0; i < values.size(); i++)
+		tagged.push_back(element(values[i], 0));
+	tagged = merge_insert_sort_impl(tagged, comparison_count);
+	std::deque<unsigned int> sorted;
+	for (size_t i = 0; i < tagged.size(); i++)
+		sorted.push_back(tagged[i].first);
+	return sorted;
 }
 
 template <typename Container>
