@@ -27,22 +27,22 @@
 template <typename Container>
 struct matching_containers;
 
-// Element sorted by the recursion: (value, tag). The tag is the index of the
-// pair the element belongs to in the caller's level, so a level can find a
-// sorted winner's pair in O(1) instead of searching by value.
+// Value sorted by the recursion, with its tag: (value, tag). The tag is the
+// index of the pair the value belongs to in the caller's level, so a level can
+// find a sorted winner's pair in O(1) instead of searching by value.
 // std::pair compares value first, so ordering is the same as on plain values.
-typedef std::pair<unsigned int, size_t> element;
+typedef std::pair<unsigned int, size_t> tagged_value;
 
 template <>
-struct matching_containers<std::vector<element> >
+struct matching_containers<std::vector<tagged_value> >
 {
-	typedef std::vector<std::pair<element, element> > pairs_type;
+	typedef std::vector<std::pair<tagged_value, tagged_value> > pairs_type;
 };
 
 template <>
-struct matching_containers<std::deque<element> >
+struct matching_containers<std::deque<tagged_value> >
 {
-	typedef std::deque<std::pair<element, element> > pairs_type;
+	typedef std::deque<std::pair<tagged_value, tagged_value> > pairs_type;
 };
 
 /**
@@ -198,7 +198,7 @@ void keep_winners_and_straggler(
 	typename Container::value_type &unpaired_value)
 {
 	for (size_t i = 0; i < pairs.size(); i++)
-		winners.push_back(element(pairs[i].first.first, i));
+		winners.push_back(tagged_value(pairs[i].first.first, i));
 
 	if (values.size() % 2 == 1)
 	{

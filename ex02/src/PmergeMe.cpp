@@ -47,13 +47,13 @@ std::vector<unsigned int> merge_insert_sort(
 	std::vector<unsigned int> &values, size_t &comparison_count)
 {
 	comparison_count = 0;
-	std::vector<element> tagged;
+	std::vector<tagged_value> tagged_values;
 	for (size_t i = 0; i < values.size(); i++)
-		tagged.push_back(element(values[i], 0));
-	tagged = merge_insert_sort_impl(tagged, comparison_count);
+		tagged_values.push_back(tagged_value(values[i], 0));
+	tagged_values = merge_insert_sort_impl(tagged_values, comparison_count);
 	std::vector<unsigned int> sorted;
-	for (size_t i = 0; i < tagged.size(); i++)
-		sorted.push_back(tagged[i].first);
+	for (size_t i = 0; i < tagged_values.size(); i++)
+		sorted.push_back(tagged_values[i].first);
 	return sorted;
 }
 
@@ -61,13 +61,13 @@ std::deque<unsigned int> merge_insert_sort(
 	std::deque<unsigned int> &values, size_t &comparison_count)
 {
 	comparison_count = 0;
-	std::deque<element> tagged;
+	std::deque<tagged_value> tagged_values;
 	for (size_t i = 0; i < values.size(); i++)
-		tagged.push_back(element(values[i], 0));
-	tagged = merge_insert_sort_impl(tagged, comparison_count);
+		tagged_values.push_back(tagged_value(values[i], 0));
+	tagged_values = merge_insert_sort_impl(tagged_values, comparison_count);
 	std::deque<unsigned int> sorted;
-	for (size_t i = 0; i < tagged.size(); i++)
-		sorted.push_back(tagged[i].first);
+	for (size_t i = 0; i < tagged_values.size(); i++)
+		sorted.push_back(tagged_values[i].first);
 	return sorted;
 }
 
