@@ -6,7 +6,7 @@
 /*   By: komorebi <komorebi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/07 15:59:31 by komorebi          #+#    #+#             */
-/*   Updated: 2026/11/10 12:22:17 by komorebi         ###   ########.fr       */
+/*   Updated: 2026/11/17 14:48:45 by komorebi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,8 @@ int main(int ac, char **av)
     std::vector<unsigned int> input;
     try
     {
-        fill_input(input, av, ac);
+        parse_input(input, av, ac);
+	    reject_duplicates(input);
     }
     catch (const std::exception &)
     {
