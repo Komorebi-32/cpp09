@@ -162,7 +162,7 @@ typename matching_containers<Container>::pairs_type make_pairs_impl(
 
 template <typename Container>
 void binary_insert(Container &chain,
-	const typename Container::value_type &value, size_t search_end,
+	const tagged_value &value, size_t search_end,
 	size_t &comparison_count)
 {
 	size_t left = 0;
@@ -195,7 +195,7 @@ void keep_winners_and_straggler(
 	const Container &values,
 	const typename matching_containers<Container>::pairs_type &pairs,
 	Container &winners, bool &has_unpaired_value,
-	typename Container::value_type &unpaired_value)
+	tagged_value &unpaired_value)
 {
 	for (size_t i = 0; i < pairs.size(); i++)
 		winners.push_back(tagged_value(pairs[i].first.first, i));
@@ -245,7 +245,7 @@ Container keep_losers(
  */
 template <typename Container>
 size_t find_pair_winner_pos(
-	const typename Container::value_type &winner, const Container &main_chain)
+	const tagged_value &winner, const Container &main_chain)
 {
 	size_t left = 0;
 	size_t right = main_chain.size();
@@ -314,7 +314,7 @@ Container merge_insert_sort_impl(
     //keep winners and unpaired value
     Container main_chain;
     bool has_unpaired_value = false;
-    typename Container::value_type unpaired_value;
+    tagged_value unpaired_value;
     keep_winners_and_straggler(
         values, pairs, main_chain, has_unpaired_value, unpaired_value);
     
