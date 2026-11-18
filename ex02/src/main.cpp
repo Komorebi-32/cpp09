@@ -61,7 +61,7 @@ int main(int ac, char **av)
     std::vector<unsigned int> vector_input;
     fill_input(vector_input, av, ac);
     size_t vector_comparison_count = 0;
-    std::vector<unsigned int> sorted_vector = merge_insert_sort(
+    std::vector<unsigned int> vector_sorted = merge_insert_sort(
         vector_input, vector_comparison_count);
     double vector_time_us = static_cast<double>(std::clock() - start)
         * 1000000.0 / CLOCKS_PER_SEC;
@@ -74,6 +74,6 @@ int main(int ac, char **av)
     double deque_time_us = static_cast<double>(std::clock() - start)
         * 1000000.0 / CLOCKS_PER_SEC;
 
-    print_results(input, sorted_vector, vector_time_us, deque_time_us);
+    print_results(input, vector_sorted, vector_time_us, deque_time_us);
     return (0);
 }

@@ -19,7 +19,7 @@
 
 /**
  * @brief Throws if the same value appears more than once.
- * Uniqueness is a hard precondition of the sort: find_pair_winner_pos()
+ * Uniqueness is a hard precondition of the sort: find_position()
  * locates a winner in the main chain by its value.
  */
 void reject_duplicates(const std::vector<unsigned int> &values)
