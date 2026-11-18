@@ -285,9 +285,9 @@ void insert_pend(
 {
 	size_t jacobsthal = 3;
 	size_t previous_jacobsthal = 1;
-	while (previous_jacobsthal < sorted_winners.size())
+	while (previous_jacobsthal < pend.size())
 	{
-		size_t group_end = std::min(jacobsthal, sorted_winners.size());
+		size_t group_end = std::min(jacobsthal, pend.size());
 		for (size_t k = group_end; k > previous_jacobsthal; --k)
 		{
 			size_t idx = k - 1; // b_k is 1-based: it is pend[k - 1]
