@@ -38,7 +38,6 @@ run_rejected_test()
 }
 
 run_valid_test "mixed input" 3 5 9 7 4 2
-run_valid_test "duplicate values" 5 5 3 3 1 1 5
 
 ascending=()
 for ((value = 1; value <= 3000; ++value)); do
@@ -71,3 +70,4 @@ run_rejected_test "numeric input with trailing text" 12abc
 run_rejected_test "unsigned integer overflow" 4294967296
 run_rejected_test "zero input" 0
 run_rejected_test "empty input token" ""
+run_rejected_test "duplicate values" 5 5 3 3 1 1 5
