@@ -65,7 +65,7 @@ void fill_input(std::deque<unsigned int> &input, char **av, int ac);
  * @return A sorted copy of the values.
  */
 std::vector<unsigned int> merge_insert_sort(
-	std::vector<unsigned int> &values, size_t &comparison_count);
+	const std::vector<unsigned int> &values, size_t &comparison_count);
 
 /**
  * @brief Sorts values using the Ford-Johnson merge-insertion algorithm.
@@ -74,7 +74,7 @@ std::vector<unsigned int> merge_insert_sort(
  * @return A sorted copy of the values.
  */
 std::deque<unsigned int> merge_insert_sort(
-	std::deque<unsigned int> &values, size_t &comparison_count);
+	const std::deque<unsigned int> &values, size_t &comparison_count);
 
 /**
  * @brief Prints the input, sorted results, and processing times for both containers.
@@ -104,9 +104,8 @@ void parse_input(Container &input, char **av, int ac)
 {
 	for (int i = 1; i < ac; i++)
 	{
-		char *end = NULL;
 		errno = 0;
-		unsigned long value = std::strtoul(av[i], &end, 10);
+		unsigned long value = std::strtoul(av[i], NULL, 10);
 
 		if (errno == ERANGE || value > UINT_MAX)
 			throw std::overflow_error("input number exceeds unsigned int max");
@@ -289,10 +288,9 @@ void insert_pend(
 	while (previous_jacobsthal < sorted_winners.size())
 	{
 		size_t group_end = std::min(jacobsthal, sorted_winners.size());
-		for (size_t idx = group_end; idx > previous_jacobsthal; )
+		for (size_t k = group_end; k > previous_jacobsthal; --k)
 		{
-			--idx; // decrementing to switch from Ford-Johnson pairs that are 1-based
-			// to 0-based C++ style
+			size_t idx = k - 1; // b_k is 1-based: it is pend[k - 1]
 
 			// search b_k only in the part of the chain before its winner a_k
 			size_t winner_pos = find_position(
@@ -309,7 +307,7 @@ void insert_pend(
 
 template <typename Container>
 Container merge_insert_sort_impl(
-	Container &values, size_t &comparison_count)
+	const Container &values, size_t &comparison_count)
 {
     //stop condition : values is already sorted if size <= 1
     if (values.size() <= 1)

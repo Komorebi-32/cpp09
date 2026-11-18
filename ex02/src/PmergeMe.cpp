@@ -44,7 +44,7 @@ void fill_input(std::deque<unsigned int> &input, char **av, int ac)
 // The public functions take plain values: they tag each value with 0 (the top
 // level has no caller to read the tag), sort, and strip the tags again.
 std::vector<unsigned int> merge_insert_sort(
-	std::vector<unsigned int> &values, size_t &comparison_count)
+	const std::vector<unsigned int> &values, size_t &comparison_count)
 {
 	comparison_count = 0;
 	std::vector<tagged_value> tagged_values;
@@ -58,7 +58,7 @@ std::vector<unsigned int> merge_insert_sort(
 }
 
 std::deque<unsigned int> merge_insert_sort(
-	std::deque<unsigned int> &values, size_t &comparison_count)
+	const std::deque<unsigned int> &values, size_t &comparison_count)
 {
 	comparison_count = 0;
 	std::deque<tagged_value> tagged_values;

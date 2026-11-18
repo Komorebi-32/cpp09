@@ -47,7 +47,7 @@ int main(int ac, char **av)
     try
     {
         parse_input(input, av, ac);
-	    reject_duplicates(input);
+        reject_duplicates(input);
     }
     catch (const std::exception &)
     {
