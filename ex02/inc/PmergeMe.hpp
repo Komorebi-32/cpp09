@@ -26,7 +26,7 @@
 
 // Value sorted by the recursion, with its tag: (value, tag). The tag is the
 // index of the pair the value belongs to in the caller's level, so a level can
-// find a sorted winner's pair in O(1) instead of searching by value.
+// find the loser of a sorted winner in O(1) instead of searching by value.
 // std::pair compares value first, so ordering is the same as on plain values.
 typedef std::pair<unsigned int, size_t> tagged_value;
 
@@ -158,6 +158,16 @@ void split_pairs(const Container &input, Container &winners_by_pair,
     }
 }
 
+/**
+ * @brief Inserts value into the sorted range chain[0, search_end) with a
+ *        binary search.
+ * @param chain Sorted chain receiving the value.
+ * @param value Value to insert.
+ * @param search_end End of the search range, exclusive: only the positions
+ *        before it are compared.
+ * @param comparison_count Incremented once per comparison.
+ * @return Nothing.
+ */
 template <typename Container>
 void binary_insert(Container &chain,
 	const tagged_value &value, size_t search_end,
@@ -226,10 +236,12 @@ void restore_caller_tags(Container &main_chain,
 }
 
 /**
- * @brief Finds the current position of a winner in the main chain.
- * The main chain is always sorted and its values are unique, so a binary
- * search finds the winner in O(log n). These lookups are bookkeeping, not
- * Ford-Johnson comparisons, so they are not counted.
+ * @brief Finds the current position of a winner in the sorted main chain,
+ *        which moves as losers are inserted.
+ * Returns the first position whose element is not smaller than value: the
+ * winner's own position, or that of an equal element before it, which is an
+ * equally valid search bound. These lookups are bookkeeping, not Ford-Johnson
+ * comparisons, so they are not counted.
  * @param value Winner whose position is needed.
  * @param chain Sorted main chain.
  * @return Position of the winner in the main chain.
@@ -253,10 +265,16 @@ size_t find_position(const tagged_value &value, const Container &chain)
 
 /**
  * @brief Inserts the pend into the main chain in Jacobsthal sequence order.
+ * The pend is cut into groups ending at the Jacobsthal numbers 3, 5, 11, 21,
+ * ... (1-based), and each group is inserted from its last element down to its
+ * first: b3 b2, then b5 b4, then b11 ... b6, and so on. b1 is already in the
+ * chain, so the first group starts after it. Each b_k is searched only in the
+ * part of the chain before its winner a_k.
  * @param main_chain Main chain receiving the pend.
  * @param pend Losers ordered to match the sorted winners.
  * @param sorted_winners Sorted winners; sorted_winners[i] is the partner of
  *        pend[i].
+ * @param comparison_count Incremented once per comparison.
  * @return Nothing.
  */
 template <typename Container>
@@ -276,14 +294,13 @@ void insert_pend(
 			--idx; // decrementing to switch from Ford-Johnson pairs that are 1-based
 			// to 0-based C++ style
 
-			// determine the position of the winner paired to the loser we want to insert
-			// so that we insert the loser with binary search until the paired winner's index
+			// search b_k only in the part of the chain before its winner a_k
 			size_t winner_pos = find_position(
 				sorted_winners[idx], main_chain);
 			binary_insert(
 				main_chain, pend[idx], winner_pos, comparison_count);
 		}
-		//update boundaries for the next group
+		//next Jacobsthal number: J(n+1) = J(n) + 2 * J(n-1)
 		size_t next_jacobsthal = jacobsthal + 2 * previous_jacobsthal;
 		previous_jacobsthal = jacobsthal;
 		jacobsthal = next_jacobsthal;
@@ -298,7 +315,7 @@ Container merge_insert_sort_impl(
     if (values.size() <= 1)
         return values;
     
-    //pair adjacent values as (winner a_i, loser b_i)
+    //split adjacent values into winners a_i and losers b_i
     Container winners_by_pair;
     Container losers_by_pair;
     split_pairs(values, winners_by_pair, losers_by_pair, comparison_count);
@@ -314,18 +331,20 @@ Container merge_insert_sort_impl(
     Container main_chain =
         merge_insert_sort_impl(tagged_winners, comparison_count);
 
-    //keep track of the losers in the same order as their sorted winners
+    //build the pend (losers in the order of their sorted winners), then give
+    //the winners back the caller's tags
     Container pend = build_pend(main_chain, losers_by_pair);
     restore_caller_tags(main_chain, winners_by_pair);
-    //sorted winners, before any loser is inserted: sorted_winners[i] pairs with pend[i]
+    //copy of the sorted winners before any insertion:
+    //sorted_winners[i] is the partner of pend[i]
     const Container sorted_winners(main_chain);
 
-    //include b1 at the beginning of the chain, since it's the loser of a1 
-    //that is at the beginning of the chain
+    //b1 is smaller than a1, the smallest winner: it goes first, with no
+    //comparison needed
     if (!pend.empty())
         main_chain.insert(main_chain.begin(), pend[0]);
 
-    //insert losers following the Jacobsthal suite order
+    //insert the rest of the pend in Jacobsthal sequence order
     insert_pend(main_chain, pend, sorted_winners, comparison_count);
 
     //insert the straggler if it exists
